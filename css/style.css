@@ -1,0 +1,520 @@
+/* --- 1. BASE & LAYOUT --- */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: #1a3a5f;
+    padding: 20px 30px;
+    border-radius: 12px;
+    color: white;
+}
+
+.booking-header h1 { margin: 0; font-size: 1.5rem; }
+
+.header-right {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.card-dashboard {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* --- 2. BUTTONS & CONTROLS --- */
+.btn-icon {
+    background: none;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 5px;
+    transition: 0.2s;
+
+    width: 35px;
+    height: 35px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-icon-detail {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-icon-detail:hover {
+    background: #f7fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    color: #2b6cb0;
+    border-color: #2b6cb0;
+}
+
+.btn-danger-detail {
+    color: #e53e3e;
+    border-color: #fed7d7;
+}
+
+.btn-danger-detail:hover {
+    background: #fff5f5;
+    color: #c53030;
+    border-color: #c53030;
+}
+
+.swal-professional-popup {
+    padding: 1.25rem !important;
+    border-radius: 1.25rem !important;
+    width: 420px !important;
+}
+
+.swal2-close {
+    font-size: 24px !important;
+    top: 10px !important;
+    right: 10px !important;
+}
+
+#detAcara, #detPIC {
+    transition: border-color 0.3s;
+}
+
+.btn-login, .btn-link, .btn-ctrl {
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10 px 15px;
+}
+
+.btn-ctrl svg {
+    flex-shrink: 0;
+}
+
+.btn-login {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 8px 16px;
+}
+.btn-login:hover { background: white; color: #1a3a5f; }
+
+.btn-link {
+    background: #f6ad55;
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.control-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-ctrl {
+    padding: 10px;
+    border: none;
+    background: #edf2f7;
+    color: #2d3748;
+}
+.btn-ctrl:hover { background: #e2e8f0; }
+
+.btn-ctrl.disabled {
+    background-color: #e2e8f0 !important; /* Latar abu-abu */
+    color: #94a3b8 !important;            /* Teks abu-abu pudar */
+    border: 1px solid #cbd5e0 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.btn-ctrl.disabled svg {
+    color: #94a3b8 !important;
+}
+.btn-ctrl.disabled:hover {
+    background-color: #e2e8f0 !important;
+    transform: none !important;
+}
+
+.btn-add-new { background: #48bb78; color: white; }
+.btn-add-new:hover { background: #38a169; }
+.btn-add-new.disabled { background: #a0aec0 !important; cursor: not-allowed; }
+
+/* --- 3. INTERACTIVE CALENDAR --- */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f4f8;
+}
+
+.btn-nav-cal {
+    background: #1a3a5f;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    cursor: pointer;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    text-align: center;
+}
+
+.cal-day {
+    padding: 10px 5px;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease; /* Transisi lebih halus */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    color: #4a5568; /* Warna teks default */
+}
+.cal-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #f6ad55; /* Warna oranye kontras */
+    border-radius: 50%;
+    position: absolute;
+    bottom: 4px;
+}
+.cal-day:hover { 
+    background: #edf2f7; 
+    color: #2b6cb0;
+}
+.cal-selected {
+    background: #2b6cb0 !important; /* Biru pekat */
+    color: white !important;         /* Teks putih */
+    box-shadow: 0 4px 10px rgba(43, 108, 176, 0.3); /* Sedikit bayangan agar pop-out */
+}
+.cal-selected .cal-dot { 
+    background-color: white !important; 
+}
+.cal-today { 
+    border: 2px solid #2b6cb0; 
+    color: #2b6cb0;
+}
+.cal-today.cal-selected {
+    border: 2px solid #1a3a5f;
+}
+
+/* --- 4. AGENDA TABLE --- */
+.table-wrapper {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 2500px; /* Diperlebar sedikit agar kolom ruangan lebih lega */
+    table-layout: fixed; /* Kunci lebar kolom */
+    border-spacing: 0;
+}
+
+th, td {
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+th {
+    background: #edf2f7;
+    position: sticky;
+    top: 0;
+    color: #4a5568;
+    z-index: 10;
+}
+
+/* Lebar kolom Jam & Tanggal */
+th:first-child, .time-column {
+    width: 100px; /* Kolom pertama lebih sempit */
+}
+
+/* Semua kolom ruangan (RS.1, RS.2, dst) akan memiliki lebar yang sama */
+th:not(:first-child), td:not(:first-child) {
+    width: 100px; /* Lebar standar untuk setiap ruangan */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Judul Tabel Baru */
+.table-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a3a5f;
+    margin: 25px 0 15px 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-title::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 25px;
+    background: #f6ad55;
+    border-radius: 10px;
+}
+
+.table-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    font-weight: 600;
+    color: #334155;
+}
+
+.table-loading.hidden {
+    display: none;
+}
+
+.table-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px 0 15px 0;
+}
+
+/* Hilangkan margin default judul karena sudah diatur container */
+.table-header-flex .table-title {
+    margin: 0;
+}
+
+.btn-view-toggle {
+    background: #2b6cb0 !important;
+    color: white !important;
+    font-size: 0.85rem;
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-view-toggle:hover {
+    background: #2c5282 !important;
+}
+
+.loader {
+    width: 36px;
+    height: 36px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#filter-checkboxes label:hover {
+    background-color: #f7fafc;
+    border-radius: 4px;
+}
+
+#filter-checkboxes input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Kolom Jam & Tanggal Terintegrasi */
+.time-column {
+    background: #f8fafc !important;
+    min-width: 80px;
+    padding: 5px !important;
+    vertical-align: middle;
+    border-right: 2px solid #1a3a5f !important;
+    font-weight: 700;
+}
+
+.date-label { font-size: 1.4rem; font-weight: 800; color: #1a3a5f; line-height: 1; }
+.day-name { font-size: 0.7rem; text-transform: uppercase; color: #718096; margin-bottom: 5px; }
+.hour-label { font-size: 0.85rem; color: #4a5568; border-top: 1px dashed #cbd5e0; padding-top: 2px; }
+
+
+/* --- Blok Mingguan --- */
+/* Container untuk blok di dalam cell mingguan agar tidak bertabrakan */
+[id^="weekly-"] {
+    height: 60px !important; /* Lebih ringkas */
+    min-height: 60px !important;
+    padding: 10px !important;
+    vertical-align: middle !important;
+    background-color: #ffffff;
+}
+
+[id^="weekly-"] .agenda-block {
+    min-height: unset !important; /* Biarkan tinggi menyesuaikan konten */
+    height: auto !important;
+    white-space: normal;
+}
+
+.time-column:has(.day-name:contains("Sabtu")),
+.time-column:has(.day-name:contains("Minggu")) {
+    background-color: #fff5f5 !important;
+}
+
+[id^="weekly-"]:hover {
+    background-color: #f1f5f9 !important;
+}
+
+/* --- GUIDE SECTION --- */
+.guide-container {
+    background: #fdfaf6; /* Latar belakang krem sangat tipis */
+    padding: 15px 20px;
+    border-radius: 12px;
+    border-left: 5px solid #f6ad55; /* Aksen warna oranye */
+    margin-bottom: 20px;
+}
+
+.guide-container h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #1a3a5f;
+}
+
+.guide-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #4a5568;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.guide-list li {
+    margin-bottom: 8px;
+    padding-left: 5px;
+}
+
+.guide-list li strong {
+    color: #2d3748;
+}
+
+/* --- 5. AGENDA BLOCKS --- */
+td.cell-filled { position: relative; padding: 0 !important; border-bottom: none !important; border-top: none !important;}
+
+.agenda-block {
+    padding: 10px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    width: 100%; height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 50px;
+    white-space: normal !important;
+    overflow: visible !important;
+    word-wrap: break-word;
+    line-height: 1.2;
+    z-index: 5;
+    margin: 0 !important;
+}
+
+.agenda-start { border-radius: 8px 8px 0 0; margin-top: 2px !important; }
+.agenda-mid { border-radius: 0; }
+.agenda-end { border-radius: 0 0 8px 8px; margin-bottom: 2px !important; border-bottom: 1px solid #e2e8f0 !important; }
+
+/* --- 6. MODAL & UI --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 30px;
+    width: 400px;
+    border-radius: 16px;
+    position: relative;
+}
+
+.form-group { margin-bottom: 15px; text-align: left; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;
+}
+
+.btn-submit {
+    width: 100%; background: #2b6cb0; color: white; border: none; padding: 12px; 
+    border-radius: 8px; cursor: pointer; font-weight: bold;
+}
+
+.close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
+
+.swal-professional-popup { border-radius: 20px !important; font-family: 'Inter', sans-serif !important; }
+.swal-title-custom { color: #1a3a5f !important; font-weight: 700; font-size: 1.5rem; }
+
+.watermark { text-align: center; margin-top: 30px; color: #a0aec0; font-size: 0.8rem; letter-spacing: 1px; }
