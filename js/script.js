@@ -574,6 +574,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAdmin = ADMIN_LIST.includes(userEmail);
         const hasAccess = isOwner || isAdmin;
 
+        let tanggalFormatted = data.tanggal;
+        try {
+            if (typeof data.tanggal === 'string' && data.tanggal.includes('/')) {
+                const p = data.tanggal.split('/');
+                const dateObj = new Date(p[2], p[1] - 1, p[0]);
+                tanggalFormatted = dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } else {
+                const dateObj = new Date(data.tanggal);
+                tanggalFormatted = dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        } catch (e) {
+            console.error("Gagal format tanggal:", e);
+        }
+
         await Swal.fire({
             title: '', // Kita kosongkan judul bawaan agar bisa kita desain kustom di HTML
             html: `
@@ -596,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="form-group">
                         <label>Tanggal Penggunaan</label>
-                        <input type="text" value="${data.tanggal}" readonly style="background: #f8fafc; color: #718096;">
+                        <input type="text" value="${tanggalFormatted}" readonly style="background: #f8fafc; color: #718096;">
                     </div>
                     <div class="form-group">
                         <label>Ruangan</label>
