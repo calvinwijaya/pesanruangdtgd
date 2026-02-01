@@ -782,6 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rowDate.setDate(monday.getDate() + i);
             
             const row = document.createElement('tr');
+            row.classList.add('weekly-row');
             
             // Kolom Nama Hari & Tanggal
             let dateLabel = `${String(rowDate.getDate()).padStart(2, '0')}/${String(rowDate.getMonth() + 1).padStart(2, '0')}`;
@@ -794,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filterRuangAktif.forEach((ruang) => {
                 const ruangIdxAsli = daftarRuang.indexOf(ruang);
                 const cellId = `weekly-${rowDate.getFullYear()}-${rowDate.getMonth()}-${rowDate.getDate()}-${ruangIdxAsli}`;
-                row.innerHTML += `<td id="${cellId}" style="height:100px; vertical-align:top; padding:8px; background: white;"></td>`;
+                row.innerHTML += `<td id="${cellId}" class="weekly-cell"></td>`;
             });
 
             tableBody.appendChild(row);
@@ -833,6 +834,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        document.querySelectorAll('.weekly-cell').forEach(c => c.innerHTML = '');
+
         // Langkah 2: Render satu blok per sel berdasarkan hitungan
         for (const cellId in cellCounts) {
             const cell = document.getElementById(cellId);
@@ -844,28 +847,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Warna makin gelap jika makin penuh (opsional)
                 block.style.backgroundColor = count > 3 ? '#1a3a5f' : '#2b6cb0'; 
                 
-                block.style.margin = 'auto';
-                block.style.width = '90%';
-                block.style.height = '40px';
-                block.style.display = 'flex';
-                block.style.alignItems = 'center';
-                block.style.justifyContent = 'center';
-                block.style.borderRadius = '6px';
-                block.style.cursor = 'pointer';
-                block.style.color = 'white';
-                
-                block.innerHTML = `<span style="font-size: 0.7rem;">TERISI (${count})</span>`;
+                block.innerHTML = `<span>TERISI (${count})</span>`;
                 
                 block.onclick = () => {
-                    // Ekstrak tanggal dari ID sel (format: weekly-YYYY-MM-DD-Idx)
                     const parts = cellId.split('-');
-                    const clickedDate = new Date(parts[1], parts[2], parts[3]);
-                    
-                    // Pindah ke harian
-                    window.selectDate(clickedDate.getDate());
-                    if (currentViewMode === 'weekly') {
-                        document.getElementById('btnToggleView').click();
-                    }
+                    const d = parseInt(parts[3]);
+                    window.selectDate(d);
+                    document.getElementById('btnToggleView').click();
                 };
                 
                 cell.appendChild(block);

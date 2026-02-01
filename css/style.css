@@ -401,6 +401,49 @@ th:not(:first-child), td:not(:first-child) {
 
 /* --- Blok Mingguan --- */
 /* Container untuk blok di dalam cell mingguan agar tidak bertabrakan */
+/* Sel mingguan harus bisa menampung blok yang bertumpuk */
+.weekly-row {
+    height: 80px !important; /* Tinggi baris hari yang seragam */
+}
+
+.weekly-cell {
+    height: 80px !important; 
+    vertical-align: middle !important; 
+    padding: 0 !important; 
+    background: white;
+    position: relative; /* Penting untuk children */
+    display: table-cell; /* Kembali ke standar tabel */
+}
+
+/* Hilangkan position absolute khusus untuk blok di dalam sel mingguan */
+.weekly-cell .agenda-block {
+    position: relative !important; /* Bukan absolute agar tidak melayang ke sel lain */
+    inset: auto !important;
+    width: 85% !important;
+    height: 45px !important;
+    margin: 5px auto !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: none !important; /* Hilangkan efek animasi harian */
+}
+
+/* Pastikan teks di dalam blok TERISI terlihat jelas */
+.weekly-cell .agenda-block span {
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: white;
+}
+
+.weekly-row:nth-child(6) .time-column,
+.weekly-row:nth-child(7) .time-column {
+    background-color: #fff5f5 !important;
+    color: #e53e3e;
+}
+
 [id^="weekly-"] {
     height: 60px !important; /* Lebih ringkas */
     min-height: 60px !important;
