@@ -198,8 +198,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Persiapan Data
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const userEmail = user.email ? user.email.toLowerCase().trim() : "";
+        const isAdmin = ADMIN_LIST.includes(userEmail);
+
         const tglValue = document.getElementById('tglKegiatan').value;
         const tglInput = new Date(tglValue);
+        tglInput.setHours(0,0,0,0);
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
 
         // Ambil detail untuk cek tabrakan
         const ruang = selectRuang.value;
@@ -211,6 +218,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Validasi Jam Dasar (Tetap sama)
         if (idxSelesai <= idxMulai) return Swal.fire('Error', 'Jam tidak valid!', 'error');
+
+        // --- 2a. LOGIKA VALIDASI DURASI & H-3 (KHUSUS NON-ADMIN) ---
+        if (!isAdmin) {
+            const durasiJam = idxSelesai - idxMulai;
+            
+            // Hitung selisih hari (H-x)
+            const diffTime = tglInput - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (durasiJam >= 5) {
+                if (diffDays < 3) {
+                    return Swal.fire({
+                        icon: 'warning',
+                        title: 'Pemesanan Ditolak',
+                        text: 'Pemesanan ruang dengan waktu yang lama (5 jam atau lebih) hanya dapat dilakukan H-3 Acara. Jika ada acara mendadak atau terdesak pada hari H, silahkan lakukan pemesanan via Admin (Hanifah).',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            }
+        }
 
         // --- 2b. LOGIKA CEK TABRAKAN (CONFLICT CHECK) ---
         const y = tglInput.getFullYear();
@@ -313,16 +340,29 @@ document.addEventListener('DOMContentLoaded', () => {
             orderId: orderID
         };
 
-        const cellBaseId = `cell-${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;
-
         const y = dateObj.getFullYear();
         const m = dateObj.getMonth();
         const d = dateObj.getDate();
         const ruangIdx = daftarRuang.indexOf(ruang);
-        const randomColor = ['#3182ce', '#38a169', '#d69e2e', '#e53e3e', '#805ad5'][Math.floor(Math.random() * 5)];
 
         // Logika Warna
-        let finalColor = ['#3182ce', '#38a169', '#d69e2e', '#e53e3e', '#805ad5'][Math.floor(Math.random() * 5)];
+        const palette = [
+        '#3182ce', '#38a169', '#d69e2e', '#e53e3e', '#805ad5',
+        '#319795', '#d53f8c', '#4a5568', '#2b6cb0', '#2c7a7b',
+        '#cd8338', '#5a67d8', '#97266d', '#285e61', '#c05621'
+        ];
+
+        // Logika agar warna konsisten berdasarkan Order ID (tidak berubah saat refresh)
+        const getConsistentColor = (id) => {
+            let hash = 0;
+            const str = id.toString();
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return palette[Math.abs(hash) % palette.length];
+        };
+
+        let finalColor = getConsistentColor(orderID);
         let opacity = "1";
 
         if (isMyBookingFilterActive) {
@@ -683,15 +723,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputPIC = document.getElementById('detPIC').value;
 
         // Hitung ulang "Hari" agar tidak kosong di spreadsheet
-        const parts = oldData.tanggal.split('/');
-        const dObj = new Date(parts[2], parts[1] - 1, parts[0]);
+        let dObj;
+        // Cek apakah formatnya DD/MM/YYYY
+        if (typeof oldData.tanggal === 'string' && oldData.tanggal.includes('/')) {
+            const parts = oldData.tanggal.split('/');
+            dObj = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+            // Jika formatnya objek Date atau string panjang (Thu Feb 05...)
+            dObj = new Date(oldData.tanggal);
+        }
+
+        if (isNaN(dObj.getTime())) {
+            return Swal.fire('Error', 'Data tanggal tidak terbaca dengan benar. Silakan coba refresh halaman.', 'error');
+        }
+
         const hariIndo = dObj.toLocaleDateString('id-ID', { weekday: 'long' });
+        const tglBersih = dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
         const payload = {
             "action": "updateBooking",
             "Order ID": oldData.orderId,
             "Hari": hariIndo, // Pastikan Hari disertakan kembali
-            "Tanggal": oldData.tanggal,
+            "Tanggal": tglBersih,
             "Acara": inputAcara,
             "Jam": oldData.jam, // Gunakan jam asli agar tidak berubah
             "PIC Kegiatan": inputPIC,
