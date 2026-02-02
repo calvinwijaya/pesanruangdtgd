@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         loadAndRenderAgenda();
+        setTimeout(updateTimeMarker, 100);
     }
 
     // Logika Form Submit
@@ -750,6 +751,8 @@ document.addEventListener('DOMContentLoaded', () => {
             textSpan.innerText = "View per Minggu";
             renderDailyTable(); // Kembali ke harian
         }
+
+        updateTimeMarker();
     };
 
     // Fungsi untuk Render Tabel Mingguan
@@ -860,4 +863,55 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Fungsi garis marker waktu saat ini
+    function updateTimeMarker() {
+        // 1. CARI DAN HAPUS marker lama di awal fungsi (Kunci agar garis tidak nyangkut)
+        const oldMarker = document.getElementById('time-marker');
+        if (oldMarker) oldMarker.remove();
+
+        // 2. VALIDASI: Jika View Minggu ATAU bukan tanggal hari ini, langsung keluar
+        const today = new Date();
+        if (currentViewMode === 'weekly' || selectedDate.toDateString() !== today.toDateString()) {
+            return;
+        }
+
+        const now = today.getHours() + today.getMinutes() / 60;
+        const startHour = parseInt(jamOperasional[0].split(':')[0]);
+        const endHour = parseInt(jamOperasional[jamOperasional.length - 1].split(':')[0]) + 1;
+
+        if (now < startHour || now > endHour) return;
+
+        // 3. Cari baris berdasarkan jam sekarang
+        const rows = document.querySelectorAll('#tableBody tr');
+        const hourIndex = Math.floor(now - startHour);
+        const targetRow = rows[hourIndex];
+
+        if (targetRow) {
+            const marker = document.createElement('div');
+            marker.id = 'time-marker';
+            marker.className = 'time-marker';
+            
+            // 4. Kalkulasi Posisi Vertikal (Y)
+            const rowRect = targetRow.getBoundingClientRect();
+            const wrapper = document.querySelector('.table-wrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            const rowHeight = targetRow.offsetHeight;
+            const minuteOffset = (today.getMinutes() / 60) * rowHeight;
+            
+            // Jarak dari atas wrapper ke baris + offset menit
+            const topPosition = (rowRect.top - wrapperRect.top) + wrapper.scrollTop + minuteOffset;
+            marker.style.top = `${topPosition}px`;
+            
+            // 5. PERBAIKAN LEBAR: Gunakan scrollWidth agar garis memanjang sampai ujung kanan tabel
+            const tableElement = document.getElementById('agendaTable');
+            marker.style.width = `${tableElement.scrollWidth}px`; 
+            
+            wrapper.appendChild(marker);
+        }
+    }
+
+    // Jalankan setiap 1 menit agar garis bergerak real-time
+    setInterval(updateTimeMarker, 60000);
 });
