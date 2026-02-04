@@ -260,9 +260,17 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 2500px; /* Diperlebar sedikit agar kolom ruangan lebih lega */
-    table-layout: fixed; /* Kunci lebar kolom */
     border-spacing: 0;
+}
+
+#agendaTable {
+    min-width: 2500px; 
+    table-layout: fixed;
+}
+
+#listTableContainer table {
+    min-width: 100% !important; 
+    table-layout: fixed;
 }
 
 th, td {
@@ -357,6 +365,44 @@ th:not(:first-child), td:not(:first-child) {
 
 .btn-view-toggle:hover {
     background: #2c5282 !important;
+}
+
+/* Tombol View List Per Agenda */
+.btnListView {
+    background: #2b6cb0 !important;
+    color: white !important;
+    font-size: 0.85rem;
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Efek Hover untuk Tombol View List Agenda */
+#btnListView:hover {
+    background: #2c5282 !important;
+}
+
+.modal-content .close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2100; /* Lebih tinggi dari konten modal */
+    color: #aaa;
+    line-height: 1;
+}
+
+.modal-content .close:hover {
+    color: #1a3a5f;
+}
+
+/* Pastikan container tabel tidak memakan seluruh lebar jika modal sangat lebar */
+#listTableContainer {
+    width: 100%;
+    margin-top: 10px;
 }
 
 /* --- TIME MARKER LINE --- */

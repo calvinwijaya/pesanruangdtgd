@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMyBookingFilterActive = false;
     let allBookedData = [];
     let currentViewMode = 'daily';
+    let listDateAnchor = new Date(selectedDate);
 
     // Definisi Elemen
     const calendarUI = document.getElementById('calendar-ui');
@@ -302,8 +303,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (result.result === "success") {
-                    // Visualisasi ke Tabel
+                    // 1. Tambahkan data baru ke array lokal agar sinkron
+                    allBookedData.push({
+                        orderId: payload["Order ID"],
+                        tanggal: payload["Tanggal"],
+                        ruang: payload["ruang"],
+                        acara: payload["Acara"],
+                        jam: payload["Jam"],
+                        pic: payload["PIC Kegiatan"],
+                        emailPIC: payload["Email PIC"]
+                    });
+
+                    // 2. Visualisasi ke Tabel
                     renderVisualAgenda(tglInput, idxMulai, idxSelesai, payload.ruang, payload.Acara, payload["PIC Kegiatan"], payload["Email PIC"], payload["Order ID"]);
+
+                    // 3. Render ulang kalender agar titik oranye langsung muncul
+                    renderCalendar();
                     
                     modal.style.display = "none";
                     form.reset();
@@ -967,4 +982,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Jalankan setiap 1 menit agar garis bergerak real-time
     setInterval(updateTimeMarker, 60000);
+
+    // Fungsi list agenda per minggu
+    const listModal = document.getElementById('listModal');
+
+    document.getElementById('btnListView').onclick = () => {
+        listDateAnchor = new Date(selectedDate);
+        document.getElementById('listModal').style.display = "block";
+        renderListHTML();
+    };
+
+    document.getElementById('closeListModal').onclick = () => {
+        listModal.style.display = "none";
+    };
+
+    function renderListHTML() {
+        // 1. Logika Range Minggu (Tetap Sama)
+        const curr = new Date(listDateAnchor);
+        const day = curr.getDay();
+        const diff = curr.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(curr.setDate(diff));
+        monday.setHours(0,0,0,0);
+        
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        document.getElementById('listRangeText').innerText = `${monday.getDate()} ${monthNames[monday.getMonth()]} — ${sunday.getDate()} ${monthNames[sunday.getMonth()]} ${sunday.getFullYear()}`;
+
+        // 2. Filter & Sort Data
+        const weeklyList = allBookedData.filter(item => {
+            let itemDate = item.tanggal.includes('/') ? new Date(item.tanggal.split('/').reverse().join('-')) : new Date(item.tanggal);
+            return itemDate >= monday && itemDate <= (new Date(sunday).setHours(23,59,59));
+        }).sort((a, b) => {
+            const parseDate = (d) => d.includes('/') ? new Date(d.split('/').reverse().join('-')) : new Date(d);
+            return parseDate(a.tanggal) - parseDate(b.tanggal) || a.jam.localeCompare(b.jam);
+        });
+
+        // 3. Bangun Tabel dengan Kolom Kecil
+        let tableHtml = `
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed;">
+                <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10;">
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 85px; text-align: center;">Hari/Tgl</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 75px; text-align: center;">Waktu</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; text-align: left;">Agenda Acara</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 80px; text-align: center;">Ruang</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${weeklyList.length > 0 ? weeklyList.map(item => {
+                        let dObj = item.tanggal.includes('/') ? new Date(item.tanggal.split('/').reverse().join('-')) : new Date(item.tanggal);
+                        
+                        let namaHariLengkap = dObj.toLocaleDateString('id-ID', { weekday: 'long' });
+                        let tanggalFormat = dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
+                        
+                        return `
+                        <tr style="border-bottom: 1px solid #edf2f7;">
+                            <td style="padding: 8px; text-align: center; vertical-align: middle;">
+                                <div style="font-weight: 700; color: #1a3a5f; font-size: 0.75rem;">${namaHariLengkap}</div>
+                                <div style="color: #64748b; font-size: 0.7rem;">${tanggalFormat}</div>
+                            </td>
+                            <td style="padding: 8px; text-align: center; vertical-align: middle;">
+                                <span style="background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 0.7rem;">${item.jam}</span>
+                            </td>
+                            <td style="padding: 8px; text-align: left; vertical-align: middle; white-space: normal; word-wrap: break-word;">
+                                <div style="font-weight: 600; color: #1e293b; line-height: 1.2;">${item.acara}</div>
+                                <div style="font-size: 0.65rem; color: #94a3b8;">PIC: ${item.pic}</div>
+                            </td>
+                            <td style="padding: 8px; text-align: center; vertical-align: middle;">
+                                <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 10px; font-weight: 700; font-size: 0.65rem;">${item.ruang}</span>
+                            </td>
+                        </tr>`;
+                    }).join('') : `<tr><td colspan="4" style="padding: 30px; text-align: center; color: #94a3b8;">Tidak ada agenda.</td></tr>`}
+                </tbody>
+            </table>`;
+
+        document.getElementById('listTableContainer').innerHTML = tableHtml;
+
+        // 4. Event Navigasi
+        document.getElementById('listPrevWeek').onclick = (e) => { 
+            e.stopPropagation();
+            listDateAnchor.setDate(listDateAnchor.getDate() - 7); 
+            renderListHTML(); 
+        };
+        document.getElementById('listNextWeek').onclick = (e) => { 
+            e.stopPropagation();
+            listDateAnchor.setDate(listDateAnchor.getDate() + 7); 
+            renderListHTML(); 
+        };
+    }
+
+    function setupModalClose() {
+        const closeListBtn = document.getElementById('closeListModal');
+        if (closeListBtn) {
+            closeListBtn.onclick = function() {
+                listModal.style.display = "none";
+            };
+        }
+
+        // Menutup jika klik di luar area putih modal
+        window.addEventListener('click', function(event) {
+            if (event.target == listModal) {
+                listModal.style.display = "none";
+            }
+        });
+    }
+    setupModalClose();
 });

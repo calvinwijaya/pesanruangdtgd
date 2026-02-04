@@ -74,10 +74,19 @@
 
         <div class="table-header-flex">
             <h2 class="table-title" id="tableTitleDynamic">Jadwal Penggunaan Ruang DTGD - Sabtu, 31 Januari 2026</h2>
-            <button id="btnToggleView" class="btn-ctrl btn-view-toggle">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <span id="textToggleView">View per Minggu</span>
-            </button>
+            <div style="display: flex; gap: 10px;">
+                <button id="btnListView" class="btn-ctrl btn-view-toggle">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    <span>View List Agenda</span>
+                </button>
+
+                <button id="btnToggleView" class="btn-ctrl btn-view-toggle">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span id="textToggleView">View per Minggu</span>
+                </button>
+            </div>
         </div>
         <div class="table-wrapper">
             <div id="tableLoading" class="table-loading hidden">
@@ -133,6 +142,22 @@
                 </div>
                 <button type="submit" class="btn-submit">Tambah Agenda</button>
             </form>
+        </div>
+    </div>
+
+    <div id="listModal" class="modal" style="display: none; z-index: 2000;">
+        <div class="modal-content" style="width: 900px; max-width: 95%; padding: 20px; border-radius: 15px;">
+            <span class="close" id="closeListModal">&times;</span>
+            
+            <div style="text-align: center; position: relative; margin-bottom: 15px;">
+                <button id="listPrevWeek" class="btn-nav-cal" style="position: absolute; left: 0; top: 10px; width: 32px; height: 32px;">&lt;</button>
+                <button id="listNextWeek" class="btn-nav-cal" style="position: absolute; right: 40px; top: 10px; width: 32px; height: 32px;">&gt;</button>
+                
+                <h2 style="margin: 0; color: #1a3a5f; font-size: 1.6rem; font-weight: 800;">List Agenda Mingguan</h2>
+                <div id="listRangeText" style="color: #3b82f6; font-weight: 700; font-size: 1.1rem; margin-top: 5px;"></div>
+            </div>
+
+            <div id="listTableContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px;"></div>
         </div>
     </div>
 
