@@ -36,6 +36,12 @@
                     <button id="nextMonth" class="btn-nav-cal"> > </button>
                 </div>
                 <div id="calendar-ui" class="calendar-container"></div>
+
+                <div id="holiday-info" style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #e53e3e; margin-bottom: 5px;">Keterangan Hari Libur:</div>
+                    <ul id="holiday-list" style="margin: 0; padding-left: 15px; font-size: 0.7rem; color: #4a5568; line-height: 1.4;">
+                        </ul>
+                </div>
             </div>
 
             <div class="card-dashboard">
@@ -49,6 +55,7 @@
                         <li>Gunakan tombol <strong>"Pesanan Saya"</strong> untuk menyorot agenda yang Anda buat sendiri.</li>
                         <li>Tombol <strong>"Sinkron Data"</strong> digunakan untuk menarik data terbaru dari server.</li>
                         <li>Tombol <strong>"Filter Ruang"</strong> untuk menyederhanakan tampilan kolom ruangan di tabel.</li>
+                        <li>Konsultasi dan konfirmasi setelah pemesanan ruang silakan menghubungi <strong>Admin</strong>.</li>
                     </ol>
                 </div>
                 <div class="control-panel">
@@ -111,18 +118,71 @@
     </div>
 
     <div id="bookingModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 500px;">
             <span class="close">&times;</span>
-            <h2>Formulir Pesan Ruang</h2>
+            <h2 style="margin-bottom: 20px;">Formulir Pesan Ruang</h2>
+
+            <div class="booking-tabs" style="display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <button type="button" class="btn-tab active" onclick="switchBookingTab('harian')">Harian</button>
+                <button type="button" class="btn-tab" onclick="switchBookingTab('berulang')">Berulang</button>
+                <button type="button" class="btn-tab" onclick="switchBookingTab('periodik')">Periodik</button>
+            </div>
+
             <form id="bookingForm">
-                <div class="form-group">
+                <input type="hidden" id="bookingMode" value="harian">
+                <div id="group-tanggal-tunggal" class="form-group">
                     <label>Tanggal</label>
                     <input type="date" id="tglKegiatan" required>
                 </div>
+
+                <div id="group-tanggal-range" class="form-group" style="display: none;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label>Tanggal Awal</label>
+                            <input type="date" id="tglAwal">
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Tanggal Akhir</label>
+                            <input type="date" id="tglAkhir">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="group-hari-berulang" class="form-group" style="display: none;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 700;">Pilih Hari Perulangan (Senin - Jumat)</label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                        
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #4a5568;">
+                            <input type="checkbox" name="repeatDay" value="1" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+                            <span style="line-height: 1;">Senin</span>
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #4a5568;">
+                            <input type="checkbox" name="repeatDay" value="2" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+                            <span style="line-height: 1;">Selasa</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #4a5568;">
+                            <input type="checkbox" name="repeatDay" value="3" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+                            <span style="line-height: 1;">Rabu</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #4a5568;">
+                            <input type="checkbox" name="repeatDay" value="4" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+                            <span style="line-height: 1;">Kamis</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #4a5568;">
+                            <input type="checkbox" name="repeatDay" value="5" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+                            <span style="line-height: 1;">Jumat</span>
+                        </label>
+
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Ruangan</label>
-                    <select id="pilihRuang" required>
-                        </select>
+                    <select id="pilihRuang" required></select>
                 </div>
                 <div class="form-group">
                     <label>Acara</label>
@@ -140,6 +200,11 @@
                     <label>PIC Kegiatan</label>
                     <input type="text" id="picKegiatan" placeholder="Nama penanggung jawab" required>
                 </div>
+                <div class="form-group">
+                    <label>Jumlah Partisipan</label>
+                    <input type="number" id="jumlahPartisipan" placeholder="Contoh: 25">
+                </div>
+
                 <button type="submit" class="btn-submit">Tambah Agenda</button>
             </form>
         </div>
@@ -150,11 +215,16 @@
             <span class="close" id="closeListModal">&times;</span>
             
             <div style="text-align: center; position: relative; margin-bottom: 15px;">
-                <button id="listPrevWeek" class="btn-nav-cal" style="position: absolute; left: 0; top: 10px; width: 32px; height: 32px;">&lt;</button>
-                <button id="listNextWeek" class="btn-nav-cal" style="position: absolute; right: 40px; top: 10px; width: 32px; height: 32px;">&gt;</button>
+                <button id="listPrev" class="btn-nav-cal" style="position: absolute; left: 0; top: 10px; width: 32px; height: 32px;">&lt;</button>
+                <button id="listNext" class="btn-nav-cal" style="position: absolute; right: 40px; top: 10px; width: 32px; height: 32px;">&gt;</button>
                 
-                <h2 style="margin: 0; color: #1a3a5f; font-size: 1.6rem; font-weight: 800;">List Agenda Mingguan</h2>
+                <h2 id="listTitle" style="margin: 0; color: #1a3a5f; font-size: 1.6rem; font-weight: 800;">List Agenda Mingguan</h2>
                 <div id="listRangeText" style="color: #3b82f6; font-weight: 700; font-size: 1.1rem; margin-top: 5px;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                <button id="btnListWeekly" class="btn-ctrl" style="padding: 5px 15px; font-size: 0.8rem;">View Mingguan</button>
+                <button id="btnListDaily" class="btn-ctrl" style="padding: 5px 15px; font-size: 0.8rem;">View Harian</button>
             </div>
 
             <div id="listTableContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px;"></div>

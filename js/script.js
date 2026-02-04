@@ -67,13 +67,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableTitle = document.getElementById('tableTitleDynamic');
 
     const jamOperasional = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-    const daftarRuang = ["RS.1", "RS.2", "RS.3", "Lab. Hidro", "Lab GGGF", "Lab GIIG", "Lab Foto", "Lab Geokom", "III.6", "III.5", "III.4", "III.3", "III.2", "III.1", "1.1", "R. Pengurus", "R. Sidang SURTA", "R. Bersama"];
+    const daftarRuang = [
+        { kode: "RS.1", nama: "RS.1", kapasitas: 20 },
+        { kode: "RS.2", nama: "RS.2", kapasitas: 20 },
+        { kode: "RS.3", nama: "RS.3", kapasitas: 20 },
+        { kode: "Lab. Hidro", nama: "Lab. Hidro", kapasitas: 30 },
+        { kode: "Lab GGGF", nama: "Lab GGGF", kapasitas: 25 },
+        { kode: "Lab CAGE", nama: "Lab CAGE", kapasitas: 15 },
+        { kode: "Lab Foto", nama: "Lab Foto", kapasitas: 25 },
+        { kode: "Lab Geokom", nama: "Lab Geokom", kapasitas: 30 },
+        { kode: "III.6", nama: "III.6", kapasitas: 40 },
+        { kode: "III.5", nama: "III.5", kapasitas: 40 },
+        { kode: "III.4", nama: "III.4", kapasitas: 40 },
+        { kode: "III.3", nama: "III.3", kapasitas: 40 },
+        { kode: "III.2", nama: "III.2", kapasitas: 40 },
+        { kode: "III.1", nama: "III.1", kapasitas: 40 },
+        { kode: "1.1", nama: "1.1", kapasitas: 50 },
+        { kode: "R. Pengurus", nama: "R. Pengurus", kapasitas: 15 },
+        { kode: "R. Sidang SURTA", nama: "R. Sidang SURTA", kapasitas: 50 },
+        { kode: "R. Bersama", nama: "R. Bersama", kapasitas: 60 }
+    ];
+
     let filterRuangAktif = [...daftarRuang];
 
     // Admin
     const ADMIN_LIST = ["dwi.sapto@ugm.ac.id", 
                         "hanifahdwi@ugm.ac.id", 
-                        "calvin.wijaya@mail.ugm.ac.id", 
+                        // "calvin.wijaya@mail.ugm.ac.id", 
                         "cecep.pratama@ugm.ac.id"];
 
     // Fungsi Utama Inisialisasi
@@ -81,8 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Isi dropdown hanya sekali
         if (selectRuang.options.length <= 1) {
             selectRuang.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
-            daftarRuang.forEach(ruang => {
-                selectRuang.innerHTML += `<option value="${ruang}">${ruang}</option>`;
+            daftarRuang.forEach(ruangObj => {
+                selectRuang.innerHTML += `<option value="${ruangObj.kode}">${ruangObj.nama} (Kapasitas: ${ruangObj.kapasitas})</option>`;
             });
             jamOperasional.forEach(jam => {
                 selectJamMulai.innerHTML += `<option value="${jam}">${jam}</option>`;
@@ -96,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendar();
         renderDailyTable();
         checkLoginStatus();
+        fetchHolidays();
     }
 
     // Menggambar Kalender di Card Kiri
@@ -113,6 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < firstDay; i++) html += `<div></div>`;
 
+        let currentMonthHolidays = [];
+
         for (let d = 1; d <= daysInMonth; d++) {
             const isSelected = (d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear());
             const isToday = (d === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear());
@@ -120,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- LOGIKA PENANDA TITIK ---
             const dStr = String(d).padStart(2, '0');
             const mStr = String(month + 1).padStart(2, '0');
-            const dateKey = `${dStr}/${mStr}/${year}`;
+            const dateKeyBooking = `${dStr}/${mStr}/${year}`;
+            const dateKeyHoliday = `${year}-${mStr}-${dStr}`;
             
             // Cek apakah ada pesanan di tanggal ini
             const hasBooking = allBookedData.some(item => {
@@ -129,17 +153,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemM = String(dateObj.getMonth() + 1).padStart(2, '0');
                 const itemY = dateObj.getFullYear();
                 const itemFormatted = `${itemD}/${itemM}/${itemY}`;
-                return itemFormatted === dateKey || item.tanggal === dateKey;
+                return itemFormatted === dateKeyBooking || item.tanggal === dateKeyBooking;
             });
 
+            const holidayInfo = holidaysData[dateKeyHoliday];
+            const isHoliday = holidayInfo && (holidayInfo.holiday === true || holidayInfo.summary);
+
+            if (isHoliday) {
+                const holidayName = holidayInfo.summary[0];
+                currentMonthHolidays.push(`${d} ${monthNames[month]}: ${holidayName}`);
+            }
+
             html += `
-            <div class="cal-day ${isSelected ? 'cal-selected' : ''} ${isToday ? 'cal-today' : ''}" onclick="selectDate(${d})">
+            <div class="cal-day ${isSelected ? 'cal-selected' : ''} ${isToday ? 'cal-today' : ''} ${isHoliday ? 'cal-holiday' : ''}" 
+                onclick="selectDate(${d})"
+                title="${isHoliday ? holidayInfo.summary[0] : ''}">
                 ${d}
                 ${hasBooking ? '<span class="cal-dot"></span>' : ''}
             </div>`;
         }
         html += `</div>`;
         calendarUI.innerHTML = html;
+
+        const listElem = document.getElementById('holiday-list');
+        if (currentMonthHolidays.length > 0) {
+            listElem.innerHTML = currentMonthHolidays.map(txt => `<li>${txt}</li>`).join('');
+            document.getElementById('holiday-info').style.display = 'block';
+        } else {
+            document.getElementById('holiday-info').style.display = 'none';
+        }
+    }
+
+    // Fungsi hari libur di kalender
+    let holidaysData = {};
+    async function fetchHolidays() {
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/guangrei/APIHariLibur_V2/main/calendar.min.json');
+            holidaysData = await response.json();
+            renderCalendar(); // Gambar ulang kalender setelah data didapat
+        } catch (error) {
+            console.error("Gagal mengambil data hari libur:", error);
+        }
     }
 
     // Klik Tanggal di Kalender (Global agar bisa dipanggil dari HTML onclick)
@@ -173,14 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update Header Tabel (Th) di HTML agar sesuai filterRuangAktif
         const headerRow = document.querySelector('#agendaTable thead tr');
-        headerRow.innerHTML = `<th>Jam</th>` + filterRuangAktif.map(r => `<th>${r}</th>`).join('');
+        headerRow.innerHTML = `<th>Jam</th>` + filterRuangAktif.map(r => `<th>${r.nama}</th>`).join('');
 
         jamOperasional.forEach(jam => {
             let row = document.createElement('tr');
             let cells = `<td style="font-weight:bold; background:#f1f5f9;">${jam}</td>`;
             
             filterRuangAktif.forEach(r => {
-                const idxAsli = daftarRuang.indexOf(r); // Mencari index asli untuk ID sel
+                const idxAsli = daftarRuang.findIndex(ruang => ruang.kode === r.kode); // Mencari index asli untuk ID sel
                 const id = `cell-${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}-${jam.replace(':','')}-${idxAsli}`;
                 cells += `<td id="${id}"></td>`;
             });
@@ -193,6 +247,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateTimeMarker, 100);
     }
 
+    // Fungsi ubah ke tanggal Indonesia
+    function formatTanggalIndonesia(dateObj) {
+        return dateObj.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
     // Logika Form Submit
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -201,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
         const userEmail = user.email ? user.email.toLowerCase().trim() : "";
         const isAdmin = ADMIN_LIST.includes(userEmail);
-
+        const mode = document.getElementById('bookingMode').value;
         const tglValue = document.getElementById('tglKegiatan').value;
         const tglInput = new Date(tglValue);
         tglInput.setHours(0,0,0,0);
@@ -216,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selesai = selectJamSelesai.value;
         const idxMulai = jamOperasional.indexOf(mulai);
         const idxSelesai = jamOperasional.indexOf(selesai);
+        const jumlahPartisipan = document.getElementById('jumlahPartisipan').value;
 
         // 2. Validasi Jam Dasar (Tetap sama)
         if (idxSelesai <= idxMulai) return Swal.fire('Error', 'Jam tidak valid!', 'error');
@@ -229,13 +294,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (durasiJam >= 5) {
-                if (diffDays < 3) {
-                    return Swal.fire({
-                        icon: 'warning',
-                        title: 'Pemesanan Ditolak',
-                        text: 'Pemesanan ruang dengan waktu yang lama (5 jam atau lebih) hanya dapat dilakukan H-3 Acara. Jika ada acara mendadak atau terdesak pada hari H, silahkan lakukan pemesanan via Admin (Hanifah).',
-                        confirmButtonColor: '#3085d6'
-                    });
+                let datesToCheck = [];
+                if (mode === 'harian') {
+                    datesToCheck = [tglInput];
+                } else {
+                    const startDate = new Date(document.getElementById('tglAwal').value);
+                    const endDate   = new Date(document.getElementById('tglAkhir').value);
+                    startDate.setHours(0,0,0,0);
+                    endDate.setHours(0,0,0,0);
+                    if (mode === 'periodik') {
+                        // Semua hari dalam range
+                        datesToCheck = getDatesInRange(startDate, endDate);
+                    } else if (mode === 'berulang') {
+                        const selectedDays = Array.from(
+                            document.querySelectorAll('input[name="repeatDay"]:checked')
+                        ).map(cb => parseInt(cb.value)); // 0–6
+                        datesToCheck = getDatesInRange(startDate, endDate, selectedDays);
+                    }
+                }
+
+                for (const cursor of datesToCheck) {
+                    const diffTime = cursor - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays < 3) {
+                        return Swal.fire({
+                            icon: 'warning',
+                            title: 'Pemesanan Ditolak',
+                            text: 'Pemesanan ruang dengan waktu yang lama (5 jam atau lebih) hanya dapat dilakukan H-3 Acara. Jika ada acara mendadak atau terdesak pada hari H, silahkan lakukan pemesanan via Admin (Hanifah).',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
                 }
             }
         }
@@ -245,17 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const m = tglInput.getMonth();
         const d = tglInput.getDate();
         
-        let isConflict = false;
-        for (let i = idxMulai; i < idxSelesai; i++) {
-            const checkId = `cell-${y}-${m}-${d}-${jamOperasional[i].replace(':','')}-${ruangIdx}`;
-            const targetCell = document.getElementById(checkId);
-            
-            // Jika sel di layar sudah mengandung class 'cell-filled', berarti bentrok
-            if (targetCell && targetCell.classList.contains('cell-filled')) {
-                isConflict = true;
-                break;
-            }
-        }
+        const isConflict = hasConflictData(tglInput, ruang, idxMulai, idxSelesai);
 
         if (isConflict) {
             return Swal.fire({
@@ -265,19 +343,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonColor: '#e53e3e'
             });
         }
+
+        // --- 2c. LOGIKA VALIDASI KAPASITAS RUANG ---
+        if (!validateRoomCapacity(ruang, jumlahPartisipan, isAdmin)) {
+            return;
+        }
         
         // 3. Konfirmasi & Loading (Baru dijalankan jika tidak bentrok)
         const payload = {
             "Order ID": "DTGD-" + Date.now(),
-            "Hari": tglInput.toLocaleDateString('id-ID', { weekday: 'long' }),
-            "Tanggal": tglInput.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+            "Mode": mode,
+            "Tipe Pesanan": mode,
             "Acara": document.getElementById('namaAcara').value,
             "Jam": `${selectJamMulai.value} - ${selectJamSelesai.value}`,
             "PIC Kegiatan": document.getElementById('picKegiatan').value,
+            "Jumlah Partisipan": document.getElementById('jumlahPartisipan').value || "",
             "Email PIC": user.email || "",
             "ruang": selectRuang.value
         };
 
+        if (mode === 'harian') {
+            const tgl = new Date(document.getElementById('tglKegiatan').value);
+            payload["Tanggal"] = tgl.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            payload["Hari"] = tgl.toLocaleDateString('id-ID', { weekday: 'long' });
+        } else {
+            payload["Tanggal Awal"] = document.getElementById('tglAwal').value;
+            payload["Tanggal Akhir"] = document.getElementById('tglAkhir').value;
+            
+            if (mode === 'berulang') {
+                const selectedDays = Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(cb => cb.value);
+                payload["Hari Perulangan"] = selectedDays.join(','); // Contoh: "1,3,5" (Sen, Rab, Jum)
+            }
+        }
+
+        if (mode !== 'harian') {
+            const startDate = new Date(payload["Tanggal Awal"]);
+            const endDate   = new Date(payload["Tanggal Akhir"]);
+            startDate.setHours(0,0,0,0);
+            endDate.setHours(0,0,0,0);
+            const repeatDays = payload["Hari Perulangan"]
+                ? payload["Hari Perulangan"].split(',').map(Number)
+                : [];
+            let cursor = new Date(startDate);
+            while (cursor <= endDate) {
+                const day = cursor.getDay(); // 0-6
+                if (mode === 'periodik' || repeatDays.includes(day)) {
+                    if (hasConflictData(cursor, ruang, idxMulai, idxSelesai)) {
+                        return Swal.fire({
+                            icon: 'error',
+                            title: 'Jadwal Bentrok!',
+                            text: `Bentrok pada hari ${formatTanggalIndonesia(cursor)}\n
+                            Ruang ${ruang}, pukul ${mulai} – ${selesai}`
+                        });
+                    }
+                }
+                cursor.setDate(cursor.getDate() + 1);
+            }
+        }
+        
         // 4. Konfirmasi & Loading
         Swal.fire({
             title: 'Kirim Pesanan?',
@@ -295,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycbxQ8poOfZ9y4dZVEOQ0qxWxBJ9i8P0-HlHkhCEBYWpooP7kHobijeUcHc6uHCc6uyN5/exec", {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec", {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -303,22 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (result.result === "success") {
-                    // 1. Tambahkan data baru ke array lokal agar sinkron
-                    allBookedData.push({
-                        orderId: payload["Order ID"],
-                        tanggal: payload["Tanggal"],
-                        ruang: payload["ruang"],
-                        acara: payload["Acara"],
-                        jam: payload["Jam"],
-                        pic: payload["PIC Kegiatan"],
-                        emailPIC: payload["Email PIC"]
-                    });
+                    await loadAndRenderAgenda();
 
-                    // 2. Visualisasi ke Tabel
-                    renderVisualAgenda(tglInput, idxMulai, idxSelesai, payload.ruang, payload.Acara, payload["PIC Kegiatan"], payload["Email PIC"], payload["Order ID"]);
-
-                    // 3. Render ulang kalender agar titik oranye langsung muncul
                     renderCalendar();
+                    renderDailyTable();
                     
                     modal.style.display = "none";
                     form.reset();
@@ -333,6 +444,129 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     };
+
+    // Fungsi konflik
+    function isTimeOverlap(startA, endA, startB, endB) {
+        return startA < endB && endA > startB;
+    }
+
+    function hasConflictData(targetDate, ruang, idxMulai, idxSelesai) {
+        return allBookedData.some(item => {
+
+            // Cek ruang
+            if (item.ruang !== ruang) return false;
+
+            // Normalisasi tanggal item
+            let itemDate;
+            if (typeof item.tanggal === 'string' && item.tanggal.includes('/')) {
+                const [d,m,y] = item.tanggal.split('/');
+                itemDate = new Date(y, m-1, d);
+            } else {
+                itemDate = new Date(item.tanggal);
+            }
+            itemDate.setHours(0,0,0,0);
+
+            if (itemDate.getTime() !== targetDate.getTime()) return false;
+
+            // Ambil jam item
+            const [jamMulaiItem, jamSelesaiItem] = item.jam.split(' - ');
+            const idxMulaiItem = jamOperasional.indexOf(jamMulaiItem);
+            const idxSelesaiItem = jamOperasional.indexOf(jamSelesaiItem);
+
+            return isTimeOverlap(
+                idxMulai, idxSelesai,
+                idxMulaiItem, idxSelesaiItem
+            );
+        });
+    }
+
+    // Fungsi helper untuk menolak pemesanan lama di periodik
+    function getDatesInRange(start, end, allowedDays = null) {
+        const dates = [];
+        const cursor = new Date(start);
+        cursor.setHours(0,0,0,0);
+
+        while (cursor <= end) {
+            if (!allowedDays || allowedDays.includes(cursor.getDay())) {
+                dates.push(new Date(cursor));
+            }
+            cursor.setDate(cursor.getDate() + 1);
+        }
+        return dates;
+    }
+
+    // Window untuk ganti tipe pemesanan ruang
+    window.switchBookingTab = (mode) => {
+        // 1. Update State
+        document.getElementById('bookingMode').value = mode;
+        
+        // 2. Update Visual Tab
+        document.querySelectorAll('.btn-tab').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.innerText.toLowerCase() === mode) btn.classList.add('active');
+        });
+
+        // 3. Kontrol Visibilitas Input
+        const tunggal = document.getElementById('group-tanggal-tunggal');
+        const range = document.getElementById('group-tanggal-range');
+        const repeatDays = document.getElementById('group-hari-berulang');
+
+        // Ambil input aslinya
+        const inputTglTunggal = document.getElementById('tglKegiatan');
+        const inputTglAwal = document.getElementById('tglAwal');
+        const inputTglAkhir = document.getElementById('tglAkhir');
+
+        if (mode === 'harian') {
+            tunggal.style.display = 'block';
+            range.style.display = 'none';
+            repeatDays.style.display = 'none';
+            inputTglTunggal.setAttribute('required', '');
+            inputTglAwal.removeAttribute('required');
+            inputTglAkhir.removeAttribute('required');
+        } else {
+            tunggal.style.display = 'none';
+            range.style.display = 'block';
+            
+            // Matikan required harian, aktifkan range
+            inputTglTunggal.removeAttribute('required');
+            inputTglAwal.setAttribute('required', '');
+            inputTglAkhir.setAttribute('required', '');
+
+            if (mode === 'berulang') {
+                repeatDays.style.display = 'block';
+            } else {
+                repeatDays.style.display = 'none';
+            }
+        }
+    };
+
+    // Fungsi untuk validasi kapasitas ruang
+    function validateRoomCapacity(ruang, jumlahPartisipan, isAdmin = false) {
+        // Admin boleh override (opsional, bisa dihapus kalau tidak mau)
+        if (isAdmin) return true;
+
+        const room = daftarRuang.findIndex(r => r.kode === ruang || r.nama === ruang);
+        if (room === -1) return true; // fallback aman
+
+        const kapasitas = daftarRuang[room].kapasitas;
+        const jumlah = parseInt(jumlahPartisipan || 0);
+
+        if (jumlah > kapasitas) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Kapasitas Ruangan Terlampaui',
+                html: `
+                    Ruangan <b>${ruang}</b> memiliki kapasitas maksimal 
+                    <b>${kapasitas} orang</b>.<br><br>
+                    Jumlah partisipan yang diinput: 
+                    <b>${jumlah} orang</b>.
+                `,
+                confirmButtonColor: '#e53e3e'
+            });
+            return false;
+        }
+        return true;
+    }
 
     // Fungsi pembantu untuk menggambar di tabel setelah sukses
     function renderVisualAgenda(dateObj, startIdx, endIdx, ruang, acara, pic, emailPIC = "", orderID = "") {
@@ -358,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = dateObj.getFullYear();
         const m = dateObj.getMonth();
         const d = dateObj.getDate();
-        const ruangIdx = daftarRuang.indexOf(ruang);
+        const ruangIdx = daftarRuang.findIndex(room => room.kode === ruang || room.nama === ruang);
 
         // Logika Warna
         const palette = [
@@ -480,7 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetDateStr = `${d}/${m}/${y}`;
         
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbxQ8poOfZ9y4dZVEOQ0qxWxBJ9i8P0-HlHkhCEBYWpooP7kHobijeUcHc6uHCc6uyN5/exec?t=" + Date.now());
+            const response = await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec?t=" + Date.now());
             allBookedData = await response.json()
 
             const dailyAgenda = allBookedData.filter(item => {
@@ -681,6 +915,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <textarea id="detAcara" readonly style="border: 1px solid #e2e8f0;">${data.acara}</textarea>
                     </div>
                     <div class="form-group">
+                        <label>Jumlah Partisipan</label>
+                        <input type="number" id="detPeserta" value="${data.peserta || ''}" readonly style="border: 1px solid #e2e8f0">
+                    </div>
+                    <div class="form-group">
                         <label>PIC Kegiatan</label>
                         <input type="text" id="detPIC" value="${data.pic}" readonly style="border: 1px solid #e2e8f0;">
                     </div>
@@ -700,10 +938,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const saveContainer = document.getElementById('saveContainer');
 
                     editBtn.onclick = () => {
-                        document.getElementById('detAcara').readOnly = false;
-                        document.getElementById('detPIC').readOnly = false;
-                        document.getElementById('detAcara').style.borderColor = "#3182ce";
-                        document.getElementById('detPIC').style.borderColor = "#3182ce";
+                        const fields = ['detAcara', 'detPIC', 'detPeserta'];
+                        fields.forEach(id => {
+                            const el = document.getElementById(id);
+                            el.readOnly = false;
+                            el.style.borderColor = "#3182ce";
+                            el.style.background = "#fff";
+                            el.style.color = "#000";
+                        });
+
                         saveContainer.style.display = "block";
                         editBtn.style.opacity = "0.5";
                         editBtn.disabled = true;
@@ -736,6 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ambil input terbaru dari modal
         const inputAcara = document.getElementById('detAcara').value;
         const inputPIC = document.getElementById('detPIC').value;
+        const inputPeserta = document.getElementById('detPeserta').value;
 
         // Hitung ulang "Hari" agar tidak kosong di spreadsheet
         let dObj;
@@ -763,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Acara": inputAcara,
             "Jam": oldData.jam, // Gunakan jam asli agar tidak berubah
             "PIC Kegiatan": inputPIC,
+            "Jumlah Partisipan": inputPeserta || "",
             "ruang": oldData.ruang,
             "Email PIC": oldData.emailPIC
         };
@@ -773,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycbxQ8poOfZ9y4dZVEOQ0qxWxBJ9i8P0-HlHkhCEBYWpooP7kHobijeUcHc6uHCc6uyN5/exec", { method: "POST", body: fd });
+            const res = await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec", { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -801,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycbxQ8poOfZ9y4dZVEOQ0qxWxBJ9i8P0-HlHkhCEBYWpooP7kHobijeUcHc6uHCc6uyN5/exec", { method: "POST", body: fd });
+            await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec", { method: "POST", body: fd });
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
     }
@@ -985,6 +1230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi list agenda per minggu
     const listModal = document.getElementById('listModal');
+    let modalViewMode = 'weekly'; // 'weekly' atau 'daily'
 
     document.getElementById('btnListView').onclick = () => {
         listDateAnchor = new Date(selectedDate);
@@ -996,80 +1242,116 @@ document.addEventListener('DOMContentLoaded', () => {
         listModal.style.display = "none";
     };
 
+    document.getElementById('btnListWeekly').onclick = () => {
+        modalViewMode = 'weekly';
+        renderListHTML();
+    };
+
+    document.getElementById('btnListDaily').onclick = () => {
+        modalViewMode = 'daily';
+        renderListHTML();
+    };
+
     function renderListHTML() {
-        // 1. Logika Range Minggu (Tetap Sama)
+        const titleElem = document.getElementById('listTitle');
+        const rangeElem = document.getElementById('listRangeText');
+        const containerElem = document.getElementById('listTableContainer');
+        
+        if (!titleElem || !rangeElem || !containerElem) return;
+        
         const curr = new Date(listDateAnchor);
         const day = curr.getDay();
-        const diff = curr.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(curr.setDate(diff));
-        monday.setHours(0,0,0,0);
-        
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
+        let startDate, endDate, titleText;
 
+        // 1. Logika Penentuan Range berdasarkan Mode
+        if (modalViewMode === 'weekly') {
+            const diff = curr.getDate() - day + (day === 0 ? -6 : 1);
+            startDate = new Date(curr.setDate(diff));
+            startDate.setHours(0,0,0,0);
+            endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+            endDate.setHours(23,59,59);
+            titleText = "List Agenda Mingguan";
+        } else {
+            startDate = new Date(curr.setHours(0,0,0,0));
+            endDate = new Date(curr.setHours(23,59,59));
+            titleText = "List Agenda Harian";
+        }
+
+        // Update UI Header
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        document.getElementById('listRangeText').innerText = `${monday.getDate()} ${monthNames[monday.getMonth()]} — ${sunday.getDate()} ${monthNames[sunday.getMonth()]} ${sunday.getFullYear()}`;
+        titleElem.innerText = titleText;
+        rangeElem.innerText = modalViewMode === 'weekly'
+            ? `${startDate.getDate()} ${monthNames[startDate.getMonth()]} — ${endDate.getDate()} ${monthNames[endDate.getMonth()]} ${endDate.getFullYear()}`
+            : `${startDate.getDate()} ${monthNames[startDate.getMonth()]} ${startDate.getFullYear()}`;
 
-        // 2. Filter & Sort Data
-        const weeklyList = allBookedData.filter(item => {
+        // 2. Filter & Sort
+        const filteredList = allBookedData.filter(item => {
+            if (item.tipePesanan === 'berulang') return false;
             let itemDate = item.tanggal.includes('/') ? new Date(item.tanggal.split('/').reverse().join('-')) : new Date(item.tanggal);
-            return itemDate >= monday && itemDate <= (new Date(sunday).setHours(23,59,59));
+            return itemDate >= startDate && itemDate <= endDate;
         }).sort((a, b) => {
             const parseDate = (d) => d.includes('/') ? new Date(d.split('/').reverse().join('-')) : new Date(d);
             return parseDate(a.tanggal) - parseDate(b.tanggal) || a.jam.localeCompare(b.jam);
         });
 
-        // 3. Bangun Tabel dengan Kolom Kecil
+        // 3. Bangun Tabel dengan Kolom "Jumlah Peserta"
         let tableHtml = `
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed;">
                 <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10;">
                     <tr>
-                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 85px; text-align: center;">Hari/Tgl</th>
-                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 75px; text-align: center;">Waktu</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 100px; text-align: center;">Hari/Tgl</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 85px; text-align: center;">Waktu</th>
                         <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; text-align: left;">Agenda Acara</th>
                         <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 80px; text-align: center;">Ruang</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #e2e8f0; width: 70px; text-align: center;">Peserta</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${weeklyList.length > 0 ? weeklyList.map(item => {
+                    ${filteredList.length > 0 ? filteredList.map(item => {
                         let dObj = item.tanggal.includes('/') ? new Date(item.tanggal.split('/').reverse().join('-')) : new Date(item.tanggal);
-                        
-                        let namaHariLengkap = dObj.toLocaleDateString('id-ID', { weekday: 'long' });
-                        let tanggalFormat = dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
-                        
                         return `
                         <tr style="border-bottom: 1px solid #edf2f7;">
-                            <td style="padding: 8px; text-align: center; vertical-align: middle;">
-                                <div style="font-weight: 700; color: #1a3a5f; font-size: 0.75rem;">${namaHariLengkap}</div>
-                                <div style="color: #64748b; font-size: 0.7rem;">${tanggalFormat}</div>
+                            <td style="padding: 8px; text-align: center;">
+                                <div style="font-weight: 700; color: #1a3a5f;">${dObj.toLocaleDateString('id-ID', { weekday: 'long' })}</div>
+                                <div style="color: #64748b; font-size: 0.7rem;">${dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</div>
                             </td>
-                            <td style="padding: 8px; text-align: center; vertical-align: middle;">
-                                <span style="background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-weight: 600; font-size: 0.7rem;">${item.jam}</span>
+                            <td style="padding: 8px; text-align: center;">
+                                <span style="background: #f1f5f9; padding: 2px 5px; border-radius: 4px; font-weight: 600;">${item.jam}</span>
                             </td>
-                            <td style="padding: 8px; text-align: left; vertical-align: middle; white-space: normal; word-wrap: break-word;">
+                            <td style="padding: 8px; text-align: left; vertical-align: top; white-space: normal; overflow: visible; word-wrap: break-word; word-break: break-word;">
                                 <div style="font-weight: 600; color: #1e293b; line-height: 1.2;">${item.acara}</div>
                                 <div style="font-size: 0.65rem; color: #94a3b8;">PIC: ${item.pic}</div>
                             </td>
-                            <td style="padding: 8px; text-align: center; vertical-align: middle;">
+                            <td style="padding: 8px; text-align: center;">
                                 <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 10px; font-weight: 700; font-size: 0.65rem;">${item.ruang}</span>
                             </td>
+                            <td style="padding: 8px; text-align: center; color: #718096; font-style: italic;">
+                                ${item.peserta || '-'}
+                            </td>
                         </tr>`;
-                    }).join('') : `<tr><td colspan="4" style="padding: 30px; text-align: center; color: #94a3b8;">Tidak ada agenda.</td></tr>`}
+                    }).join('') : `<tr><td colspan="5" style="padding: 30px; text-align: center; color: #94a3b8;">Tidak ada agenda.</td></tr>`}
                 </tbody>
             </table>`;
 
         document.getElementById('listTableContainer').innerHTML = tableHtml;
 
-        // 4. Event Navigasi
-        document.getElementById('listPrevWeek').onclick = (e) => { 
+        // Update Button Active State
+        document.getElementById('btnListWeekly').style.background = modalViewMode === 'weekly' ? '#2b6cb0' : '#edf2f7';
+        document.getElementById('btnListWeekly').style.color = modalViewMode === 'weekly' ? 'white' : '#2d3748';
+        document.getElementById('btnListDaily').style.background = modalViewMode === 'daily' ? '#2b6cb0' : '#edf2f7';
+        document.getElementById('btnListDaily').style.color = modalViewMode === 'daily' ? 'white' : '#2d3748';
+
+        // 4. Navigasi menyesuaikan mode
+        document.getElementById('listPrev').onclick = (e) => {
             e.stopPropagation();
-            listDateAnchor.setDate(listDateAnchor.getDate() - 7); 
-            renderListHTML(); 
+            modalViewMode === 'weekly' ? listDateAnchor.setDate(listDateAnchor.getDate() - 7) : listDateAnchor.setDate(listDateAnchor.getDate() - 1);
+            renderListHTML();
         };
-        document.getElementById('listNextWeek').onclick = (e) => { 
+        document.getElementById('listNext').onclick = (e) => {
             e.stopPropagation();
-            listDateAnchor.setDate(listDateAnchor.getDate() + 7); 
-            renderListHTML(); 
+            modalViewMode === 'weekly' ? listDateAnchor.setDate(listDateAnchor.getDate() + 7) : listDateAnchor.setDate(listDateAnchor.getDate() + 1);
+            renderListHTML();
         };
     }
 
