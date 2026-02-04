@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Admin
     const ADMIN_LIST = ["dwi.sapto@ugm.ac.id", 
                         "hanifahdwi@ugm.ac.id", 
-                        // "calvin.wijaya@mail.ugm.ac.id", 
+                        "calvin.wijaya@mail.ugm.ac.id", 
                         "cecep.pratama@ugm.ac.id"];
 
     // Fungsi Utama Inisialisasi
