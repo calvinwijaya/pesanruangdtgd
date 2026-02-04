@@ -808,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnFilter = document.getElementById('btnFilterRuang');
     if (btnFilter) {
         btnFilter.onclick = async () => {
-            const { value: selectedRuangan } = await Swal.fire({
+            const { value: selectedKodes } = await Swal.fire({
                 title: 'Filter Ruangan',
                 html: `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
@@ -817,12 +817,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div id="filter-checkboxes" style="display: grid; grid-template-columns: 1fr 1fr; text-align: left; gap: 10px; font-size: 0.9rem; max-height: 300px; overflow-y: auto; padding: 5px;">
-                        ${daftarRuang.map(r => `
-                            <label style="cursor:pointer; display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox" value="${r}" ${filterRuangAktif.includes(r) ? 'checked' : ''}> 
-                                <span>${r}</span>
-                            </label>
-                        `).join('')}
+                        ${daftarRuang.map(r => {
+                            const isChecked = filterRuangAktif.some(akt => akt.kode === r.kode);
+                            return `
+                                <label style="cursor:pointer; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" value="${r.kode}" ${isChecked ? 'checked' : ''}> 
+                                    <span>${r.nama}</span>
+                                </label>
+                            `;
+                        }).join('')}
                     </div>`,
                 showCancelButton: true,
                 confirmButtonText: 'Terapkan Filter',
@@ -839,17 +842,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                 },
                 preConfirm: () => {
-                    const checked = Array.from(document.querySelectorAll('#filter-checkboxes input:checked')).map(el => el.value);
-                    if (checked.length === 0) {
+                    const checkedKodes = Array.from(document.querySelectorAll('#filter-checkboxes input:checked')).map(el => el.value);
+                    if (checkedKodes.length === 0) {
                         Swal.showValidationMessage('Pilih minimal satu ruangan!');
                     }
-                    return checked;
+                    return checkedKodes;
                 }
             });
 
-            if (selectedRuangan) {
-                filterRuangAktif = selectedRuangan;
-                renderDailyTable();
+            if (selectedKodes) {
+                filterRuangAktif = daftarRuang.filter(r => selectedKodes.includes(r.kode));
+                if (currentViewMode === 'weekly') {
+                    renderWeeklyTable();
+                } else {
+                    renderDailyTable();
+                }
             }
         };
     }
@@ -1080,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Buat Header Ruangan (Sesuai filterRuangAktif)
         filterRuangAktif.forEach((ruang) => {
             const th = document.createElement('th');
-            th.innerText = ruang;
+            th.innerText = ruang.nama;
             tableHead.appendChild(th);
         });
 
@@ -1109,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Kolom Ruangan
             filterRuangAktif.forEach((ruang) => {
-                const ruangIdxAsli = daftarRuang.indexOf(ruang);
+                const ruangIdxAsli = daftarRuang.findIndex(room => room.kode === ruang.kode);
                 const cellId = `weekly-${rowDate.getFullYear()}-${rowDate.getMonth()}-${rowDate.getDate()}-${ruangIdxAsli}`;
                 row.innerHTML += `<td id="${cellId}" class="weekly-cell"></td>`;
             });
@@ -1143,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const end = new Date(sundayDate); end.setHours(0,0,0,0);
 
             if (itemDate >= start && itemDate <= end) {
-                const ruangIdxAsli = daftarRuang.indexOf(item.ruang);
+                const ruangIdxAsli = daftarRuang.findIndex(room => room.kode === item.ruang || room.nama === item.ruang);
                 const cellId = `weekly-${itemDate.getFullYear()}-${itemDate.getMonth()}-${itemDate.getDate()}-${ruangIdxAsli}`;
                 
                 cellCounts[cellId] = (cellCounts[cellId] || 0) + 1;
