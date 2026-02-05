@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const jamOperasional = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     const daftarRuang = [
         { kode: "RS.1", nama: "RS.1", kapasitas: 44 },
-        { kode: "RS.2", nama: "RS.2", kapasitas: 18 },
+        { kode: "RS.2", nama: "RS.2", kapasitas: 26 },
         { kode: "RS.3", nama: "RS.3", kapasitas: 12 },
         { kode: "Lab. Hidro", nama: "Lab. Hidro", kapasitas: 8 },
         { kode: "Lab GGGF", nama: "Lab GGGF", kapasitas: 16 },
