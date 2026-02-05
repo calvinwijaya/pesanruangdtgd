@@ -68,24 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const jamOperasional = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     const daftarRuang = [
-        { kode: "RS.1", nama: "RS.1", kapasitas: 20 },
-        { kode: "RS.2", nama: "RS.2", kapasitas: 20 },
-        { kode: "RS.3", nama: "RS.3", kapasitas: 20 },
-        { kode: "Lab. Hidro", nama: "Lab. Hidro", kapasitas: 30 },
-        { kode: "Lab GGGF", nama: "Lab GGGF", kapasitas: 25 },
-        { kode: "Lab CAGE", nama: "Lab CAGE", kapasitas: 15 },
-        { kode: "Lab Foto", nama: "Lab Foto", kapasitas: 25 },
-        { kode: "Lab Geokom", nama: "Lab Geokom", kapasitas: 30 },
-        { kode: "III.6", nama: "III.6", kapasitas: 40 },
-        { kode: "III.5", nama: "III.5", kapasitas: 40 },
-        { kode: "III.4", nama: "III.4", kapasitas: 40 },
-        { kode: "III.3", nama: "III.3", kapasitas: 40 },
-        { kode: "III.2", nama: "III.2", kapasitas: 40 },
-        { kode: "III.1", nama: "III.1", kapasitas: 40 },
-        { kode: "1.1", nama: "1.1", kapasitas: 50 },
-        { kode: "R. Pengurus", nama: "R. Pengurus", kapasitas: 15 },
-        { kode: "R. Sidang SURTA", nama: "R. Sidang SURTA", kapasitas: 50 },
-        { kode: "R. Bersama", nama: "R. Bersama", kapasitas: 60 }
+        { kode: "RS.1", nama: "RS.1", kapasitas: 44 },
+        { kode: "RS.2", nama: "RS.2", kapasitas: 18 },
+        { kode: "RS.3", nama: "RS.3", kapasitas: 12 },
+        { kode: "Lab. Hidro", nama: "Lab. Hidro", kapasitas: 8 },
+        { kode: "Lab GGGF", nama: "Lab GGGF", kapasitas: 16 },
+        { kode: "Lab CAGE", nama: "Lab CAGE", kapasitas: 16 },
+        { kode: "Lab Foto", nama: "Lab Foto", kapasitas: 70 },
+        { kode: "Lab Geokom", nama: "Lab Geokom", kapasitas: 75 },
+        { kode: "III.6", nama: "III.6", kapasitas: 12 },
+        { kode: "III.5", nama: "III.5", kapasitas: 45 },
+        { kode: "III.4", nama: "III.4", kapasitas: 190 },
+        { kode: "III.3", nama: "III.3", kapasitas: 80 },
+        { kode: "III.2", nama: "III.2", kapasitas: 80 },
+        { kode: "III.1", nama: "III.1", kapasitas: 117 },
+        { kode: "1.1", nama: "1.1", kapasitas: 80 },
+        { kode: "R. Pengurus", nama: "R. Pengurus", kapasitas: 8 },
+        { kode: "R. Sidang SURTA", nama: "R. Sidang SURTA", kapasitas: 8 },
+        { kode: "R. Bersama", nama: "R. Bersama", kapasitas: 12 }
     ];
 
     let filterRuangAktif = [...daftarRuang];
