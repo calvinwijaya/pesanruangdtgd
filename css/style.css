@@ -382,22 +382,30 @@ th:not(:first-child), td:not(:first-child) {
     position: absolute;
     top: 0;
     left: 0;
-    /* Gunakan min-width 100% agar minimal selebar layar, 
-       tapi tetap mengikuti isi jika tabel lebih lebar */
-    width: 100%; 
+    width: 100%;
     height: 100%;
-    min-width: max-content; /* Ini kuncinya agar menutupi tabel yang panjang */
+    box-sizing: border-box;
+    min-width: max-content;
     background: rgba(255, 255, 255, 0.8);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    gap: 10px;
+    z-index: 1000;
+    pointer-events: all;
+    display: block; 
+    padding-top: 200px;
 }
 
 .table-loading.hidden {
     display: none;
+}
+
+.table-loading .loader-content {
+    position: sticky;
+    left: 50vw;
+    transform: translateX(-50%);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
 }
 
 .table-header-flex {
