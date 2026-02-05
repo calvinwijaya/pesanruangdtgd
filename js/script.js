@@ -811,7 +811,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi loading tabel
     function showTableLoading() {
-        tableLoading.classList.remove('hidden');
+        const loader = document.getElementById('tableLoading');
+        const table = document.getElementById('agendaTable');
+        loader.classList.remove('hidden');
+        // tableLoading.classList.remove('hidden');
+        if (table) {
+            loader.style.width = table.scrollWidth + 'px';
+        }
     }
 
     function hideTableLoading() {

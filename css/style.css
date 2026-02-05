@@ -380,15 +380,20 @@ th:not(:first-child), td:not(:first-child) {
 
 .table-loading {
     position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.8);
+    top: 0;
+    left: 0;
+    /* Gunakan min-width 100% agar minimal selebar layar, 
+       tapi tetap mengikuti isi jika tabel lebih lebar */
+    width: 100%; 
+    height: 100%;
+    min-width: max-content; /* Ini kuncinya agar menutupi tabel yang panjang */
+    background: rgba(255, 255, 255, 0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 10;
-    font-weight: 600;
-    color: #334155;
+    z-index: 100;
+    gap: 10px;
 }
 
 .table-loading.hidden {
