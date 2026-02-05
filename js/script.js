@@ -283,7 +283,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update Header Tabel (Th) di HTML agar sesuai filterRuangAktif
         const headerRow = document.querySelector('#agendaTable thead tr');
-        headerRow.innerHTML = `<th>Jam</th>` + filterRuangAktif.map(r => `<th>${r.nama}</th>`).join('');
+        headerRow.innerHTML = `<th>Jam</th>` + filterRuangAktif.map(r => `
+            <th>
+                <div style="font-size: 1rem;">${r.nama}</div>
+                <div style="font-size: 0.7rem; font-weight: 400; color: #cbd5e0; margin-top: 2px;">
+                    ${r.kapasitas} orang
+                </div>
+            </th>
+        `).join('');
 
         jamOperasional.forEach(jam => {
             let row = document.createElement('tr');
