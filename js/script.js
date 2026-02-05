@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allBookedData = [];
     let currentViewMode = 'daily';
     let listDateAnchor = new Date(selectedDate);
+    let bookingByDate = {};
 
     // Definisi Elemen
     const calendarUI = document.getElementById('calendar-ui');
@@ -769,6 +770,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start App
     initApp();
 
+    const jamIndexMap = {};
+    jamOperasional.forEach((j,i) => jamIndexMap[j] = i);
+    
     // Fungsi untuk memanggil data dari spreadsheet
     async function loadAndRenderAgenda() {
         const d = String(selectedDate.getDate()).padStart(2, '0');
@@ -778,36 +782,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const response = await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec?t=" + Date.now());
-            allBookedData = await response.json()
-
-            const dailyAgenda = allBookedData.filter(item => {
-                let itemFormatted = "";
-
-                if (item.tanggal.includes('/') && item.tanggal.length <= 10) {
-                    // Kasus A: Data sudah berupa string "31/01/2026"
-                    itemFormatted = item.tanggal;
-                } else {
-                    // Kasus B: Data berupa format panjang "Mon Feb 02..."
-                    const dateObj = new Date(item.tanggal);
-                    if (!isNaN(dateObj)) {
-                        const idD = String(dateObj.getDate()).padStart(2, '0');
-                        const idM = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const idY = dateObj.getFullYear();
-                        itemFormatted = `${idD}/${idM}/${idY}`;
-                    }
-                }
-                
-                return itemFormatted === targetDateStr;
-            });
+            allBookedData = normalizeBookedData(await response.json());
+            buildBookingIndex(allBookedData);
+            const dailyAgenda = bookingByDate[targetDateStr] || [];
 
             dailyAgenda.forEach(item => {
                 if (item.jam && item.jam.includes('-')) {
-                    const parts = item.jam.split('-');
-                    const mulai = parts[0].trim();
-                    const selesai = parts[1].trim();
+                    const [mulai, selesai] = item.jam.split('-').map(j => j.trim());
 
-                    const idxMulai = jamOperasional.indexOf(mulai);
-                    const idxSelesai = jamOperasional.indexOf(selesai);
+                    const idxMulai = jamIndexMap[mulai];
+                    const idxSelesai = jamIndexMap[selesai];
 
                     if (idxMulai !== -1 && idxSelesai !== -1) {
                         renderVisualAgenda(selectedDate, idxMulai, idxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
@@ -1441,4 +1425,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     setupModalClose();
+
+    // Fungsi untuk optimasi:
+    function normalizeBookedData(raw) {
+        return raw.map(item => {
+            let dateObj;
+
+            if (typeof item.tanggal === 'string' && item.tanggal.includes('/')) {
+                const [d,m,y] = item.tanggal.split('/');
+                dateObj = new Date(y, m-1, d);
+            } else {
+                dateObj = new Date(item.tanggal);
+            }
+
+            dateObj.setHours(0,0,0,0);
+
+            return {
+                ...item,
+                _dateObj: dateObj,
+                _dateKey: `${String(dateObj.getDate()).padStart(2,'0')}/${String(dateObj.getMonth()+1).padStart(2,'0')}/${dateObj.getFullYear()}`
+            };
+        });
+    }
+
+    function buildBookingIndex(data) {
+        bookingByDate = {};
+        data.forEach(item => {
+            if (!bookingByDate[item._dateKey]) {
+                bookingByDate[item._dateKey] = [];
+            }
+            bookingByDate[item._dateKey].push(item);
+        });
+    }
+
 });
