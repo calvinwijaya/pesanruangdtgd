@@ -135,27 +135,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < firstDay; i++) html += `<div></div>`;
 
         let currentMonthHolidays = [];
+        let periodikSummary = [];
 
         for (let d = 1; d <= daysInMonth; d++) {
-            const isSelected = (d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear());
-            const isToday = (d === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear());
-            
             // --- LOGIKA PENANDA TITIK ---
             const dStr = String(d).padStart(2, '0');
             const mStr = String(month + 1).padStart(2, '0');
             const dateKeyBooking = `${dStr}/${mStr}/${year}`;
             const dateKeyHoliday = `${year}-${mStr}-${dStr}`;
-            
-            // Cek apakah ada pesanan di tanggal ini
-            const hasBooking = allBookedData.some(item => {
-                const dateObj = new Date(item.tanggal);
-                const itemD = String(dateObj.getDate()).padStart(2, '0');
-                const itemM = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const itemY = dateObj.getFullYear();
-                const itemFormatted = `${itemD}/${itemM}/${itemY}`;
-                return itemFormatted === dateKeyBooking || item.tanggal === dateKeyBooking;
-            });
 
+            // Hari Libur
             const holidayInfo = holidaysData[dateKeyHoliday];
             const isHoliday = holidayInfo && (holidayInfo.holiday === true || holidayInfo.summary);
 
@@ -164,10 +153,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentMonthHolidays.push(`${d} ${monthNames[month]}: ${holidayName}`);
             }
 
+            // Periodik
+            const dayBookings = allBookedData.filter(item =>
+                normalizeDateKey(item.tanggal) === dateKeyBooking
+            );
+
+            const hasBooking = dayBookings.length > 0;
+            const periodikBookings = dayBookings.filter(item =>
+                item.tipePesanan === 'periodik'
+            );
+
+            let periodikHtml = "";
+            periodikBookings.forEach(book => {
+                const baseId = book.orderId.split('-').slice(0, 2).join('-');
+                const yesterdayKey = `${String(d-1).padStart(2,'0')}/${mStr}/${year}`;
+                const tomorrowKey  = `${String(d+1).padStart(2,'0')}/${mStr}/${year}`;
+                const hasYesterday = allBookedData.some(item =>
+                    item.orderId.startsWith(baseId) &&
+                    normalizeDateKey(item.tanggal) === yesterdayKey
+                );
+                const hasTomorrow = allBookedData.some(item =>
+                    item.orderId.startsWith(baseId) &&
+                    normalizeDateKey(item.tanggal) === tomorrowKey
+                );
+                const isStart = !hasYesterday;
+                const isEnd   = !hasTomorrow;
+                periodikHtml += `
+                    <div class="periodik-line 
+                        ${isStart ? 'periodik-start' : ''} 
+                        ${isEnd ? 'periodik-end' : ''}"
+                        title="${book.acara}">
+                    </div>
+                `;
+                if (isStart) {
+                    periodikSummary.push(
+                        `${book.acara} (${book.ruang}) ${d} ${monthNames[month]}`
+                    );
+                }
+            });
+
+            const isSelected = (d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear());
+            const isToday = (d === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear());
+
             html += `
             <div class="cal-day ${isSelected ? 'cal-selected' : ''} ${isToday ? 'cal-today' : ''} ${isHoliday ? 'cal-holiday' : ''}" 
                 onclick="selectDate(${d})"
                 title="${isHoliday ? holidayInfo.summary[0] : ''}">
+                ${periodikHtml}
                 ${d}
                 ${hasBooking ? '<span class="cal-dot"></span>' : ''}
             </div>`;
@@ -175,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `</div>`;
         calendarUI.innerHTML = html;
 
+        // Render daftar hari libur
         const listElem = document.getElementById('holiday-list');
         if (currentMonthHolidays.length > 0) {
             listElem.innerHTML = currentMonthHolidays.map(txt => `<li>${txt}</li>`).join('');
@@ -182,7 +215,30 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.getElementById('holiday-info').style.display = 'none';
         }
+
+        // Render periodik
+        const periodikElem = document.getElementById('periodik-list');
+        const periodikContainer = document.getElementById('periodik-info');
+        if (periodikSummary.length > 0) {
+            periodikContainer.style.display = 'block';
+            // Menghilangkan duplikasi nama acara yang sama di list bawah
+            const uniquePeriodik = [...new Set(periodikSummary)];
+            periodikElem.innerHTML = uniquePeriodik.map(txt => `<li>${txt}</li>`).join('');
+        } else {
+            periodikContainer.style.display = 'none';
+        }
     }
+
+    // Fungsi normalisasi tanggal
+    function normalizeDateKey(tgl) {
+        if (typeof tgl === 'string' && tgl.includes('/')) {
+            return tgl;
+        }
+        const d = new Date(tgl);
+        if (isNaN(d)) return '';
+        return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    }
+
 
     // Fungsi hari libur di kalender
     let holidaysData = {};

@@ -286,6 +286,22 @@ body {
     margin-left: -1em;
 }
 
+/* Garis periodik */
+.periodik-line {
+    position: absolute;
+    top: 4px; /* Letakkan di bagian atas kotak tanggal */
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #3182ce;
+    z-index: 5;
+    opacity: 0.6;
+}
+
+/* Rounded corner untuk awal dan akhir rentang */
+.periodik-start { border-top-left-radius: 3px; border-bottom-left-radius: 3px; left: 4px; }
+.periodik-end { border-top-right-radius: 3px; border-bottom-right-radius: 3px; right: 4px; }
+
 /* --- 4. AGENDA TABLE --- */
 .table-wrapper {
     overflow-x: auto;
