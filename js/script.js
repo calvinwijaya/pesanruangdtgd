@@ -187,9 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
                 if (isStart) {
-                    periodikSummary.push(
-                        `${book.acara} (${book.ruang}) ${d} ${monthNames[month]}`
-                    );
+                    periodikSummary.push(book.acara);
                 }
             });
 
@@ -222,9 +220,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const periodikContainer = document.getElementById('periodik-info');
         if (periodikSummary.length > 0) {
             periodikContainer.style.display = 'block';
-            // Menghilangkan duplikasi nama acara yang sama di list bawah
+            
+            // Menghilangkan duplikasi Nama Acara
             const uniquePeriodik = [...new Set(periodikSummary)];
-            periodikElem.innerHTML = uniquePeriodik.map(txt => `<li>${txt}</li>`).join('');
+            
+            // Render hanya nama acaranya saja sesuai permintaan Anda
+            periodikElem.innerHTML = uniquePeriodik.map(namaAcara => `
+                <li style="list-style: none; position: relative; padding-left: 5px;">
+                    <span style="color: #3182ce; margin-right: 5px;">•</span>
+                    ${namaAcara}
+                </li>
+            `).join('');
         } else {
             periodikContainer.style.display = 'none';
         }
