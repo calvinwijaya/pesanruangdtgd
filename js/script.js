@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableLoading = document.getElementById('tableLoading');
     const tableTitle = document.getElementById('tableTitleDynamic');
 
-    const jamOperasional = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+    const jamOperasional = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
     const menitOperasional = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
     const daftarRuang = [
         { kode: "RS.1", nama: "RS.1", kapasitas: 44 },
@@ -328,7 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </th>
         `).join('');
 
-        jamOperasional.forEach(jam => {
+        jamOperasional.forEach((jam, index) => {
+            if (index === jamOperasional.length - 1) return;
             let row = document.createElement('tr');
             let cells = `<td style="font-weight:bold; background:#f1f5f9;">${jam}</td>`;
             
@@ -834,17 +835,25 @@ document.addEventListener('DOMContentLoaded', () => {
             dailyAgenda.forEach(item => {
                 if (item.jam && item.jam.includes('-')) {
                     const [waktuMulai, waktuSelesai] = item.jam.split('-').map(j => j.trim());
-        
-                    const jamMulaiSaja = waktuMulai.split(':')[0] + ":00";
-                    const jamSelesaiSaja = waktuSelesai.split(':')[0] + ":00";
-
+                    const [hMulai, mMulai] = waktuMulai.split(':').map(Number);
+                    const [hSelesai, mSelesai] = waktuSelesai.split(':').map(Number);
+                    let hMulaiRounded = (mMulai <= 29) ? hMulai : hMulai + 1;
+                    let hSelesaiRounded = (mSelesai <= 29) ? hSelesai : hSelesai + 1;
+                    if ((hSelesai === 12 || hSelesai === 16 || hSelesai === 17 || hSelesai === 18) && mSelesai > 0) {
+                        hSelesaiRounded = hSelesai + 1;
+                    }
+                    const jamMulaiSaja = (hMulaiRounded < 10 ? "0" + hMulaiRounded : hMulaiRounded) + ":00";
+                    const jamSelesaiSaja = (hSelesaiRounded < 10 ? "0" + hSelesaiRounded : hSelesaiRounded) + ":00";
                     const idxMulai = jamIndexMap[jamMulaiSaja];
                     const idxSelesai = jamIndexMap[jamSelesaiSaja];
-
-                    const finalIdxSelesai = (idxMulai === idxSelesai) ? idxSelesai + 1 : idxSelesai;
-
-                    if (idxMulai !== -1) {
-                        renderVisualAgenda(selectedDate, idxMulai, finalIdxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
+                    let finalIdxSelesai = idxSelesai;
+                    if (idxMulai >= idxSelesai) {
+                        finalIdxSelesai = idxMulai + 1;
+                    }
+                    const maxIdx = jamOperasional.length - 1;
+                    if (idxMulai !== -1 && idxMulai !== -1) {
+                        const safeIdxSelesai = Math.min(idxSelesai, maxIdx);
+                        renderVisualAgenda(selectedDate, idxMulai, safeIdxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
                     }
                 }
             });
