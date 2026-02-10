@@ -1084,6 +1084,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             selMulai.dispatchEvent(new Event('change'));
 
                         } else {
+                            const selMulai = document.getElementById('detJamMulai');
+                            const selSelesai = document.getElementById('detJamSelesai');
+                            selMulai.onchange = null;
+                            
                             fields.forEach(id => {
                                 const el = document.getElementById(id);
                                 if (id === 'detTgl') {
@@ -1092,10 +1096,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                     el.readOnly = true;
                                 } else if (el.tagName === 'SELECT') {
                                     el.disabled = true;
-                                    el.value = (id === 'detRuang') ? data.ruang : (id === 'detJamMulai' ? data.jam.split(' - ')[0] : data.jam.split(' - ')[1]);
+                                    if (id === 'detJamMulai') {
+                                        el.value = data.jam.split(' - ')[0];
+                                    } else if (id === 'detJamSelesai') {
+
+                                        el.innerHTML = `<option value="${data.jam.split(' - ')[1]}">${data.jam.split(' - ')[1]}</option>`;
+                                        el.value = data.jam.split(' - ')[1];
+                                    } else if (id === 'detRuang') {
+                                        el.value = data.ruang;
+                                    }
                                 } else {
                                     el.readOnly = true;
-                                    el.value = (id === 'detAcara') ? data.acara : (id === 'detPIC' ? data.pic : data.peserta);
+                                    el.value = (id === 'detAcara') ? data.acara : (id === 'detPIC' ? data.pic : (data.peserta || ''));
                                 }
                                 el.style.borderColor = "#e2e8f0";
                                 el.style.background = "#f8fafc";
@@ -1107,6 +1119,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                             });
 
+                            selMulai.onchange = () => updateSelesaiOptions(selMulai, selSelesai);
                             saveContainer.style.display = "none";
                             editBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
                         }
