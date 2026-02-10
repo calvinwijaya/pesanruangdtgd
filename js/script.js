@@ -1106,8 +1106,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const el = document.getElementById(id);
                                 if (id === 'detTgl') {
                                     el.type = "date";
-                                    const today = new Date().toISOString().split('T')[0];
-                                    el.value = today;
+                                    const p = data.tanggal.split('/');
+                                    const dateAsli = `${p[2]}-${p[1]}-${p[0]}`;
+                                    el.value = dateAsli;
                                     el.readOnly = false;
                                 } else if (el.tagName === 'SELECT') {
                                     el.disabled = false;
