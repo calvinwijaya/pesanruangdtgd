@@ -303,6 +303,10 @@ body {
 .periodik-end { border-top-right-radius: 3px; border-bottom-right-radius: 3px; right: 4px; }
 
 /* --- 4. AGENDA TABLE --- */
+#agendaTable {
+    min-height: 400px; /* Atur agar tabel tidak menciut saat kosong */
+}
+
 .table-wrapper {
     overflow-x: auto;
     background: white;
@@ -391,6 +395,8 @@ th:not(:first-child), td:not(:first-child) {
     pointer-events: all;
     display: block; 
     padding-top: 200px;
+    align-items: center;
+    justify-content: center;
 }
 
 .table-loading.hidden {

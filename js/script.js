@@ -99,7 +99,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         "cecep.pratama@ugm.ac.id"];
 
     // Fungsi Utama Inisialisasi
-    function initApp() {
+    async function initApp() {
+        jamOperasional.forEach((j, i) => jamIndexMap[j] = i);
+        
         const selectJamMulai = document.getElementById('jamMulai');
         const selectMenitMulai = document.getElementById('menitMulai');
         const selectJamSelesai = document.getElementById('jamSelesai');
@@ -126,10 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         tableTitle.innerText = `Jadwal Penggunaan Ruang DTGD - ${new Date().toLocaleDateString('id-ID', options)}`;
         
-        renderCalendar();
-        renderDailyTable();
         checkLoginStatus();
         fetchHolidays();
+        showTableLoading();
+        await fetchAgendaData();
+        renderCalendar();
+        renderDailyTable();
 
         selectJamMulai.onchange = () => {
             const startIndex = jamOperasional.indexOf(selectJamMulai.value + ":00"); 
@@ -311,7 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Menggambar Tabel Harian (Satu Hari Saja)
     function renderDailyTable() {
-        showTableLoading();
         tableBody.innerHTML = "";
         const y = selectedDate.getFullYear();
         const m = selectedDate.getMonth();
@@ -342,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = cells;
             tableBody.appendChild(row);
         });
-
+        showTableLoading();
         loadAndRenderAgenda();
         setTimeout(updateTimeMarker, 100);
     }
@@ -538,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (result.result === "success") {
-                    await loadAndRenderAgenda();
+                    await fetchAgendaData();
 
                     renderCalendar();
                     renderDailyTable();
@@ -814,58 +817,49 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.close').onclick = () => modal.style.display = "none";
 
     // Start App
-    initApp();
-
     const jamIndexMap = {};
     jamOperasional.forEach((j,i) => jamIndexMap[j] = i);
+    initApp();
     
     // Fungsi untuk memanggil data dari spreadsheet
-    async function loadAndRenderAgenda() {
+    function loadAndRenderAgenda() {
         const d = String(selectedDate.getDate()).padStart(2, '0');
         const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
         const y = selectedDate.getFullYear();
         const targetDateStr = `${d}/${m}/${y}`;
-        
-        try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec?t=" + Date.now());
-            allBookedData = normalizeBookedData(await response.json());
-            buildBookingIndex(allBookedData);
-            const dailyAgenda = bookingByDate[targetDateStr] || [];
+        const dailyAgenda = bookingByDate[targetDateStr] || [];
 
-            dailyAgenda.forEach(item => {
-                if (item.jam && item.jam.includes('-')) {
-                    const [waktuMulai, waktuSelesai] = item.jam.split('-').map(j => j.trim());
-                    const [hMulai, mMulai] = waktuMulai.split(':').map(Number);
-                    const [hSelesai, mSelesai] = waktuSelesai.split(':').map(Number);
-                    let hMulaiRounded = (mMulai <= 29) ? hMulai : hMulai + 1;
-                    let hSelesaiRounded = (mSelesai <= 29) ? hSelesai : hSelesai + 1;
-                    if ((hSelesai === 12 || hSelesai === 16 || hSelesai === 17 || hSelesai === 18) && mSelesai > 0) {
-                        hSelesaiRounded = hSelesai + 1;
-                    }
-                    const jamMulaiSaja = (hMulaiRounded < 10 ? "0" + hMulaiRounded : hMulaiRounded) + ":00";
-                    const jamSelesaiSaja = (hSelesaiRounded < 10 ? "0" + hSelesaiRounded : hSelesaiRounded) + ":00";
-                    const idxMulai = jamIndexMap[jamMulaiSaja];
-                    const idxSelesai = jamIndexMap[jamSelesaiSaja];
-                    let finalIdxSelesai = idxSelesai;
-                    if (idxMulai >= idxSelesai) {
-                        finalIdxSelesai = idxMulai + 1;
-                    }
-                    const maxIdx = jamOperasional.length - 1;
-                    if (idxMulai !== -1 && idxMulai !== -1) {
-                        const safeIdxSelesai = Math.min(idxSelesai, maxIdx);
-                        renderVisualAgenda(selectedDate, idxMulai, safeIdxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
-                    }
+        dailyAgenda.forEach(item => {
+            if (item.jam && item.jam.includes('-')) {
+                const [waktuMulai, waktuSelesai] = item.jam.split('-').map(j => j.trim());
+                const [hMulai, mMulai] = waktuMulai.split(':').map(Number);
+                const [hSelesai, mSelesai] = waktuSelesai.split(':').map(Number);
+                let hMulaiRounded = (mMulai <= 29) ? hMulai : hMulai + 1;
+                let hSelesaiRounded = (mSelesai <= 29) ? hSelesai : hSelesai + 1;
+                if ((hSelesai === 12 || hSelesai === 16 || hSelesai === 17 || hSelesai === 18) && mSelesai > 0) {
+                    hSelesaiRounded = hSelesai + 1;
                 }
-            });
 
-            renderCalendar();
+                const jamMulaiSaja = (hMulaiRounded < 10 ? "0" + hMulaiRounded : hMulaiRounded) + ":00";
+                const jamSelesaiSaja = (hSelesaiRounded < 10 ? "0" + hSelesaiRounded : hSelesaiRounded) + ":00";
 
-        } catch (err) {
-            console.error("Gagal sinkronisasi data:", err);
-        } finally {
-            hideTableLoading();
-            if (Swal.isVisible()) Swal.close();
-        }
+                const idxMulai = jamIndexMap[jamMulaiSaja];
+                const idxSelesai = jamIndexMap[jamSelesaiSaja];
+
+                if (idxMulai !== undefined && idxMulai !== -1) {
+                    let finalIdxSelesai = idxSelesai !== -1 ? idxSelesai : idxMulai + 1;
+                    if (idxMulai >= finalIdxSelesai) finalIdxSelesai = idxMulai + 1;
+
+                    const maxIdx = jamOperasional.length - 1;
+                    const safeIdxSelesai = Math.min(finalIdxSelesai, maxIdx);
+                    
+                    renderVisualAgenda(selectedDate, idxMulai, safeIdxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
+                }
+            }
+        });
+
+        hideTableLoading();
+        setTimeout(updateTimeMarker, 100);
     }
 
     // Fungsi loading tabel
@@ -879,22 +873,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function hideTableLoading() {
-        tableLoading.classList.add('hidden');
+        if (tableLoading) {
+            tableLoading.classList.add('hidden'); // Memastikan class hidden ditambahkan
+        }
     }
 
     // Fungsi Sinkronisasi Data
     const btnSync = document.getElementById('btnSync');
     if (btnSync) {
-        btnSync.onclick = () => {
+        btnSync.onclick = async () => {
             Swal.fire({
                 title: 'Sinkronisasi Data...',
                 text: 'Mengambil jadwal terbaru dari Cloud',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
-                    renderDailyTable(); // Ini akan memicu loadAndRenderAgenda
                 }
             });
+            await fetchAgendaData(); 
+            renderDailyTable();
+            Swal.close(); 
         };
     }
 
@@ -1276,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await res.json();
 
             if (result.result === "success") {
-                await loadAndRenderAgenda(); 
+                await fetchAgendaData(); 
         
                 Swal.fire('Berhasil!', 'Agenda telah diperbarui.', 'success').then(() => {
                     // Menggambar ulang tabel sesuai mode view yang aktif
@@ -1307,6 +1305,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
             await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec", { method: "POST", body: fd });
+            await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
     }
@@ -1662,6 +1661,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             bookingByDate[item._dateKey].push(item);
         });
+    }
+
+    // Fungsi baru khusus untuk mengambil data dari server
+    async function fetchAgendaData() {
+        showTableLoading();
+        try {
+            const response = await fetch("https://script.google.com/macros/s/AKfycbxdighuUGoWrArL6JREQBrp4ikns0fyZDpFQ-kxHrp_Hj9tRrcD3BkAv4XA_CoOSaIH/exec?t=" + Date.now());
+            const rawData = await response.json();
+            
+            // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
+            allBookedData = normalizeBookedData(rawData);
+            buildBookingIndex(allBookedData);
+
+        } catch (err) {
+            console.error("Gagal ambil data:", err);
+            Swal.fire('Error', 'Gagal sinkronisasi data dari server', 'error');
+        } finally {
+            hideTableLoading();
+        }
     }
 
 });
