@@ -198,10 +198,16 @@
                 </div>
                 <div class="form-group">
                     <label>Waktu Kegiatan</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="jamMulai" required></select>
-                        <span style="align-self: center;">s/d</span>
-                        <select id="jamSelesai" required></select>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="jamMulai" required style="flex: 1;"></select>
+                        <span style="font-weight: bold;">:</span>
+                        <select id="menitMulai" required style="flex: 1;"></select>
+                        
+                        <span style="padding: 0 5px; color: #64748b; font-weight: 600;">s/d</span>
+
+                        <select id="jamSelesai" required style="flex: 1;"></select>
+                        <span style="font-weight: bold;">:</span>
+                        <select id="menitSelesai" required style="flex: 1;"></select>
                     </div>
                 </div>
                 <div class="form-group">

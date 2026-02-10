@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableTitle = document.getElementById('tableTitleDynamic');
 
     const jamOperasional = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+    const menitOperasional = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
     const daftarRuang = [
         { kode: "RS.1", nama: "RS.1", kapasitas: 44 },
         { kode: "RS.2", nama: "RS.2", kapasitas: 26 },
@@ -100,8 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fungsi Utama Inisialisasi
     function initApp() {
         const selectJamMulai = document.getElementById('jamMulai');
+        const selectMenitMulai = document.getElementById('menitMulai');
         const selectJamSelesai = document.getElementById('jamSelesai');
-        const selectRuang = document.getElementById('pilihRuang'); // Pastikan ini juga ada
+        const selectMenitSelesai = document.getElementById('menitSelesai');
+        const selectRuang = document.getElementById('pilihRuang');
         
         // Isi dropdown hanya sekali
         if (selectRuang.options.length <= 1) {
@@ -110,8 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectRuang.innerHTML += `<option value="${ruangObj.kode}">${ruangObj.nama} (Kapasitas: ${ruangObj.kapasitas})</option>`;
             });
             jamOperasional.forEach(jam => {
-                selectJamMulai.innerHTML += `<option value="${jam}">${jam}</option>`;
-                selectJamSelesai.innerHTML += `<option value="${jam}">${jam}</option>`;
+                const jamSaja = jam.split(':')[0];
+                selectJamMulai.innerHTML += `<option value="${jamSaja}">${jamSaja}</option>`;
+                selectJamSelesai.innerHTML += `<option value="${jamSaja}">${jamSaja}</option>`;
+            });
+            menitOperasional.forEach(menit => {
+                selectMenitMulai.innerHTML += `<option value="${menit}">${menit}</option>`;
+                selectMenitSelesai.innerHTML += `<option value="${menit}">${menit}</option>`;
             });
         }
 
@@ -124,20 +132,21 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchHolidays();
 
         selectJamMulai.onchange = () => {
-            const startIndex = jamOperasional.indexOf(selectJamMulai.value);
+            const startIndex = jamOperasional.indexOf(selectJamMulai.value + ":00"); 
             const savedSelesai = selectJamSelesai.value;
 
             selectJamSelesai.innerHTML = '';
-                jamOperasional.forEach((jam, idx) => {
-                    if (idx > startIndex) {
-                        const opt = document.createElement('option');
-                        opt.value = jam;
-                        opt.text = jam;
-                        if (jam === savedSelesai) opt.selected = true;
-                        selectJamSelesai.appendChild(opt);
-                    }
-                });
-            };
+            jamOperasional.forEach((jam, idx) => {
+                if (idx > startIndex) {
+                    const jamSaja = jam.split(':')[0]; // Ambil angka jamnya saja untuk option
+                    const opt = document.createElement('option');
+                    opt.value = jamSaja;
+                    opt.text = jamSaja;
+                    if (jamSaja === savedSelesai) opt.selected = true;
+                    selectJamSelesai.appendChild(opt);
+                }
+            });
+        };
     }
 
     // Menggambar Kalender di Card Kiri
@@ -347,6 +356,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Fungsi konversi jam ke menit
+    function timeToMinutes(timeStr) {
+        const [hrs, mins] = timeStr.split(':').map(Number);
+        return (hrs * 60) + mins;
+    }
+
     // Logika Form Submit
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -366,14 +381,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ambil detail untuk cek tabrakan
         const ruang = selectRuang.value;
         const ruangIdx = daftarRuang.indexOf(ruang);
-        const mulai = selectJamMulai.value;
-        const selesai = selectJamSelesai.value;
-        const idxMulai = jamOperasional.indexOf(mulai);
-        const idxSelesai = jamOperasional.indexOf(selesai);
+        const jMulai = document.getElementById('jamMulai').value;
+        const mMulai = document.getElementById('menitMulai').value;
+        const jSelesai = document.getElementById('jamSelesai').value;
+        const mSelesai = document.getElementById('menitSelesai').value;
+
+        const waktuMulaiStr = `${jMulai}:${mMulai}`;
+        const waktuSelesaiStr = `${jSelesai}:${mSelesai}`;
+
         const jumlahPartisipan = document.getElementById('jumlahPartisipan').value;
 
         // 2. Validasi Jam Dasar (Tetap sama)
-        if (idxSelesai <= idxMulai) return Swal.fire('Error', 'Jam tidak valid!', 'error');
+        if (timeToMinutes(waktuSelesaiStr) <= timeToMinutes(waktuMulaiStr)) {
+            return Swal.fire('Error', 'Waktu selesai harus setelah waktu mulai!', 'error');
+        }
 
         // --- 2a. LOGIKA VALIDASI DURASI & H-3 (KHUSUS NON-ADMIN) ---
         if (!isAdmin) {
@@ -423,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const m = tglInput.getMonth();
         const d = tglInput.getDate();
         
-        const isConflict = hasConflictData(tglInput, ruang, idxMulai, idxSelesai);
+        const isConflict = hasConflictData(tglInput, ruang, waktuMulaiStr, waktuSelesaiStr);
 
         if (isConflict) {
             return Swal.fire({
@@ -445,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Mode": mode,
             "Tipe Pesanan": mode,
             "Acara": document.getElementById('namaAcara').value,
-            "Jam": `${selectJamMulai.value} - ${selectJamSelesai.value}`,
+            "Jam": `${jMulai}:${mMulai} - ${jSelesai}:${mSelesai}`,
             "PIC Kegiatan": document.getElementById('picKegiatan').value,
             "Jumlah Partisipan": document.getElementById('jumlahPartisipan').value || "",
             "Email PIC": user.email || "",
@@ -478,12 +499,12 @@ document.addEventListener('DOMContentLoaded', () => {
             while (cursor <= endDate) {
                 const day = cursor.getDay(); // 0-6
                 if (mode === 'periodik' || repeatDays.includes(day)) {
-                    if (hasConflictData(cursor, ruang, idxMulai, idxSelesai)) {
+                    if (hasConflictData(cursor, ruang, waktuMulaiStr, waktuSelesaiStr)) {
                         return Swal.fire({
                             icon: 'error',
                             title: 'Jadwal Bentrok!',
                             text: `Bentrok pada hari ${formatTanggalIndonesia(cursor)}\n
-                            Ruang ${ruang}, pukul ${mulai} – ${selesai}`
+                            Ruang ${ruang}, pukul ${waktuMulaiStr} – ${waktuSelesaiStr}`
                         });
                     }
                 }
@@ -537,36 +558,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi konflik
     function isTimeOverlap(startA, endA, startB, endB) {
-        return startA < endB && endA > startB;
+        const sA = timeToMinutes(startA);
+        const eA = timeToMinutes(endA);
+        const sB = timeToMinutes(startB);
+        const eB = timeToMinutes(endB);
+
+        return sA < eB && eA > sB;
     }
 
-    function hasConflictData(targetDate, ruang, idxMulai, idxSelesai) {
-        return allBookedData.some(item => {
+    function hasConflictData(targetDate, ruang, newStartStr, newEndStr) {
+        const newStartTotal = timeToMinutes(newStartStr);
+        const newEndTotal = timeToMinutes(newEndStr);
 
-            // Cek ruang
+        return allBookedData.some(item => {
             if (item.ruang !== ruang) return false;
 
             // Normalisasi tanggal item
-            let itemDate;
-            if (typeof item.tanggal === 'string' && item.tanggal.includes('/')) {
-                const [d,m,y] = item.tanggal.split('/');
-                itemDate = new Date(y, m-1, d);
-            } else {
-                itemDate = new Date(item.tanggal);
-            }
-            itemDate.setHours(0,0,0,0);
+            let itemDate = item.tanggal.includes('/') ? 
+                new Date(item.tanggal.split('/').reverse().join('-')) : new Date(item.tanggal);
+            itemDate.setHours(0, 0, 0, 0);
 
             if (itemDate.getTime() !== targetDate.getTime()) return false;
 
             // Ambil jam item
-            const [jamMulaiItem, jamSelesaiItem] = item.jam.split(' - ');
-            const idxMulaiItem = jamOperasional.indexOf(jamMulaiItem);
-            const idxSelesaiItem = jamOperasional.indexOf(jamSelesaiItem);
+            const [existStartStr, existEndStr] = item.jam.split(' - ');
+            const existStartTotal = timeToMinutes(existStartStr);
+            const existEndTotal = timeToMinutes(existEndStr);
 
-            return isTimeOverlap(
-                idxMulai, idxSelesai,
-                idxMulaiItem, idxSelesaiItem
-            );
+            return newStartTotal < existEndTotal && newEndTotal > existStartTotal;
         });
     }
 
@@ -814,13 +833,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             dailyAgenda.forEach(item => {
                 if (item.jam && item.jam.includes('-')) {
-                    const [mulai, selesai] = item.jam.split('-').map(j => j.trim());
+                    const [waktuMulai, waktuSelesai] = item.jam.split('-').map(j => j.trim());
+        
+                    const jamMulaiSaja = waktuMulai.split(':')[0] + ":00";
+                    const jamSelesaiSaja = waktuSelesai.split(':')[0] + ":00";
 
-                    const idxMulai = jamIndexMap[mulai];
-                    const idxSelesai = jamIndexMap[selesai];
+                    const idxMulai = jamIndexMap[jamMulaiSaja];
+                    const idxSelesai = jamIndexMap[jamSelesaiSaja];
 
-                    if (idxMulai !== -1 && idxSelesai !== -1) {
-                        renderVisualAgenda(selectedDate, idxMulai, idxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
+                    const finalIdxSelesai = (idxMulai === idxSelesai) ? idxSelesai + 1 : idxSelesai;
+
+                    if (idxMulai !== -1) {
+                        renderVisualAgenda(selectedDate, idxMulai, finalIdxSelesai, item.ruang, item.acara, item.pic, item.emailPIC, item.orderId);
                     }
                 }
             });
@@ -999,12 +1023,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="form-group">
                         <label>Waktu Kegiatan</label>
                         <div style="display: flex; gap: 5px; align-items: center;">
-                            <select id="detJamMulai" disabled style="background: #f8fafc; flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1;">
-                                ${jamOperasional.map(jam => `<option value="${jam}" ${jam === data.jam.split(' - ')[0] ? 'selected' : ''}>${jam}</option>`).join('')}
+                            <select id="detJamMulai" disabled style="flex: 1;">
+                                ${jamOperasional.map(j => `<option value="${j.split(':')[0]}" ${j.split(':')[0] === data.jam.split(' - ')[0].split(':')[0] ? 'selected' : ''}>${j.split(':')[0]}</option>`).join('')}
                             </select>
-                            <span style="color: #718096;"> - </span>
-                            <select id="detJamSelesai" disabled style="background: #f8fafc; flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1;">
-                                ${jamOperasional.map(jam => `<option value="${jam}" ${jam === data.jam.split(' - ')[1] ? 'selected' : ''}>${jam}</option>`).join('')}
+                            <span>:</span>
+                            <select id="detMenitMulai" disabled style="flex: 1;">
+                                ${menitOperasional.map(m => `<option value="${m}" ${m === data.jam.split(' - ')[0].split(':')[1] ? 'selected' : ''}>${m}</option>`).join('')}
+                            </select>
+                            
+                            <span style="padding: 0 5px;">s/d</span>
+
+                            <select id="detJamSelesai" disabled style="flex: 1;">
+                                ${jamOperasional.map(j => `<option value="${j.split(':')[0]}" ${j.split(':')[0] === data.jam.split(' - ')[1].split(':')[0] ? 'selected' : ''}>${j.split(':')[0]}</option>`).join('')}
+                            </select>
+                            <span>:</span>
+                            <select id="detMenitSelesai" disabled style="flex: 1;">
+                                ${menitOperasional.map(m => `<option value="${m}" ${m === data.jam.split(' - ')[1].split(':')[1] ? 'selected' : ''}>${m}</option>`).join('')}
                             </select>
                         </div>
                     </div>
@@ -1036,16 +1070,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const saveContainer = document.getElementById('saveContainer');
                     const updateSelesaiOptions = (mulaiEl, selesaiEl) => {
                         const startVal = mulaiEl.value;
-                        const startIndex = jamOperasional.indexOf(startVal);
+                        const startIndex = jamOperasional.indexOf(startVal + ":00");
                         const currentSelesai = selesaiEl.value;
 
                         selesaiEl.innerHTML = '';
                         jamOperasional.forEach((jam, idx) => {
                             if (idx > startIndex) {
+                                const jamSaja = jam.split(':')[0];
                                 const opt = document.createElement('option');
-                                opt.value = jam;
-                                opt.text = jam;
-                                if (jam === currentSelesai) opt.selected = true;
+                                opt.value = jamSaja;
+                                opt.text = jamSaja;
+                                if (jamSaja === currentSelesai) opt.selected = true;
                                 selesaiEl.appendChild(opt);
                             }
                         });
@@ -1058,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     editBtn.onclick = () => {
                         const isEditMode = saveContainer.style.display === "block";
-                        const fields = ['detTgl', 'detRuang', 'detJamMulai', 'detJamSelesai', 'detAcara', 'detPIC', 'detPeserta'];
+                        const fields = ['detTgl', 'detRuang', 'detJamMulai', 'detMenitMulai', 'detJamSelesai', 'detMenitSelesai', 'detAcara', 'detPIC', 'detPeserta'];
                         if (!isEditMode) {
                             fields.forEach(id => {
                                 const el = document.getElementById(id);
@@ -1086,37 +1121,37 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             const selMulai = document.getElementById('detJamMulai');
                             const selSelesai = document.getElementById('detJamSelesai');
-                            selMulai.onchange = null;
+                            
+                            selMulai.onchange = null; // Matikan listener sementara agar tidak bentrok
                             
                             fields.forEach(id => {
                                 const el = document.getElementById(id);
+                                const [waktuMulai, waktuSelesai] = data.jam.split(' - '); 
+                                const [hMulai, mMulai] = waktuMulai.split(':');
+                                const [hSelesai, mSelesai] = waktuSelesai.split(':');
                                 if (id === 'detTgl') {
                                     el.type = "text";
                                     el.value = tanggalFormatted;
                                     el.readOnly = true;
                                 } else if (el.tagName === 'SELECT') {
                                     el.disabled = true;
-                                    if (id === 'detJamMulai') {
-                                        el.value = data.jam.split(' - ')[0];
-                                    } else if (id === 'detJamSelesai') {
-
-                                        el.innerHTML = `<option value="${data.jam.split(' - ')[1]}">${data.jam.split(' - ')[1]}</option>`;
-                                        el.value = data.jam.split(' - ')[1];
-                                    } else if (id === 'detRuang') {
-                                        el.value = data.ruang;
+                                    if (id === 'detJamMulai') el.value = hMulai;
+                                    if (id === 'detMenitMulai') el.value = mMulai;
+                                    if (id === 'detJamSelesai') {
+                                        el.innerHTML = `<option value="${hSelesai}">${hSelesai}</option>`;
+                                        el.value = hSelesai;
                                     }
+                                    if (id === 'detMenitSelesai') el.value = mSelesai;
+                                    if (id === 'detRuang') el.value = data.ruang;              
                                 } else {
                                     el.readOnly = true;
                                     el.value = (id === 'detAcara') ? data.acara : (id === 'detPIC' ? data.pic : (data.peserta || ''));
                                 }
+                                // Reset style visual ke default readonly
                                 el.style.borderColor = "#e2e8f0";
                                 el.style.background = "#f8fafc";
                                 el.style.color = "#718096";
-
-                                if (el.tagName === 'SELECT') {
-                                    el.disabled = true;
-                                    el.style.cursor = "default";
-                                }
+                                if (el.tagName === 'SELECT') el.style.cursor = "default";
                             });
 
                             selMulai.onchange = () => updateSelesaiOptions(selMulai, selSelesai);
@@ -1152,19 +1187,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ambil input terbaru dari modal
         const inputTgl = document.getElementById('detTgl').value;
         const inputRuang = document.getElementById('detRuang').value;
-        const mulai = document.getElementById('detJamMulai').value;
-        const selesai = document.getElementById('detJamSelesai').value;
+        const jMulai = document.getElementById('detJamMulai').value;
+        const mMulai = document.getElementById('detMenitMulai').value;
+        const jSelesai = document.getElementById('detJamSelesai').value;
+        const mSelesai = document.getElementById('detMenitSelesai').value;
         const inputAcara = document.getElementById('detAcara').value;
         const inputPIC = document.getElementById('detPIC').value;
         const inputPeserta = document.getElementById('detPeserta').value;
 
-        if (!inputTgl || !mulai || !selesai) return Swal.fire('Error', 'Data wajib diisi!', 'error');
+        if (!inputTgl || !jMulai || !jSelesai) return Swal.fire('Error', 'Data wajib diisi!', 'error');
 
         const dObj = new Date(inputTgl);
         dObj.setHours(0,0,0,0);
-        const idxMulai = jamOperasional.indexOf(mulai);
-        const idxSelesai = jamOperasional.indexOf(selesai);
+
+        const idxMulai = jamOperasional.indexOf(jMulai + ":00");
+        const idxSelesai = jamOperasional.indexOf(jSelesai + ":00");
+
+        const waktuMulaiBaru = `${jMulai}:${mMulai}`;
+        const waktuSelesaiBaru = `${jSelesai}:${mSelesai}`;
         
+        if (timeToMinutes(waktuSelesaiBaru) <= timeToMinutes(waktuMulaiBaru)) {
+            return Swal.fire('Error', 'Waktu selesai harus setelah waktu mulai!', 'error');
+        }
         if (idxSelesai <= idxMulai) return Swal.fire('Error', 'Jam selesai tidak valid!', 'error');
 
         const isConflict = allBookedData.some(item => {
@@ -1178,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (itemDate.getTime() !== dObj.getTime()) return false;
 
             const [jMulaiItem, jSelesaiItem] = item.jam.split(' - ');
-            return isTimeOverlap(idxMulai, idxSelesai, jamOperasional.indexOf(jMulaiItem), jamOperasional.indexOf(jSelesaiItem));
+            return isTimeOverlap(waktuMulaiBaru, waktuSelesaiBaru, jMulaiItem, jSelesaiItem);
         });
 
         if (isConflict) return Swal.fire('Jadwal Bentrok!', 'Ruangan sudah terisi.', 'error');
@@ -1205,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Hari": hariIndo, // Pastikan Hari disertakan kembali
             "Tanggal": tglBersih,
             "Acara": inputAcara,
-            "Jam": `${mulai} - ${selesai}`,
+            "Jam": `${jMulai}:${mMulai} - ${jSelesai}:${mSelesai}`,
             "PIC Kegiatan": inputPIC,
             "Jumlah Partisipan": inputPeserta || "",
             "ruang": inputRuang,
