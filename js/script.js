@@ -965,15 +965,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="form-group">
                         <label>Tanggal Penggunaan</label>
-                        <input type="text" value="${tanggalFormatted}" readonly style="background: #f8fafc; color: #718096;">
+                        <input type="text" id="detTgl" value="${tanggalFormatted}" 
+                            data-iso="${data.tanggal.split('/').reverse().join('-')}" 
+                            readonly style="background: #f8fafc; color: #718096; cursor: default;">
                     </div>
                     <div class="form-group">
                         <label>Ruangan</label>
-                        <input type="text" value="${data.ruang}" readonly style="background: #f8fafc; color: #718096;">
+                        <select id="detRuang" disabled 
+                                style="background: #f8fafc; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1; -webkit-appearance: none; cursor: default;">
+                            ${daftarRuang.map(r => `<option value="${r.kode}" ${r.kode === data.ruang ? 'selected' : ''}>${r.nama}</option>`).join('')}
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Waktu Kegiatan</label>
-                        <input type="text" value="${data.jam}" readonly style="background: #f8fafc; color: #718096;">
+                        <div style="display: flex; gap: 5px; align-items: center;">
+                            <select id="detJamMulai" disabled style="background: #f8fafc; flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1;">
+                                ${jamOperasional.map(jam => `<option value="${jam}" ${jam === data.jam.split(' - ')[0] ? 'selected' : ''}>${jam}</option>`).join('')}
+                            </select>
+                            <span style="color: #718096;"> - </span>
+                            <select id="detJamSelesai" disabled style="background: #f8fafc; flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1;">
+                                ${jamOperasional.map(jam => `<option value="${jam}" ${jam === data.jam.split(' - ')[1] ? 'selected' : ''}>${jam}</option>`).join('')}
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Peruntukan Acara</label>
@@ -1003,10 +1016,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const saveContainer = document.getElementById('saveContainer');
 
                     editBtn.onclick = () => {
-                        const fields = ['detAcara', 'detPIC', 'detPeserta'];
+                        const fields = ['detTgl', 'detRuang', 'detJamMulai', 'detJamSelesai', 'detAcara', 'detPIC', 'detPeserta'];
                         fields.forEach(id => {
                             const el = document.getElementById(id);
-                            el.readOnly = false;
+                            if (id === 'detTgl') {
+                                el.type = "date";
+                                el.value = el.getAttribute('data-iso');
+                                el.readOnly = false;
+                            } else if (el.tagName === 'SELECT') {
+                                el.disabled = false;
+                            } else {
+                                el.readOnly = false;
+                            }
+
                             el.style.borderColor = "#3182ce";
                             el.style.background = "#fff";
                             el.style.color = "#000";
@@ -1015,6 +1037,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         saveContainer.style.display = "block";
                         editBtn.style.opacity = "0.5";
                         editBtn.disabled = true;
+                    };
+
+                    const selMulai = document.getElementById('detJamMulai');
+                    selMulai.dispatchEvent(new Event('change'));
+                    const selSelesai = document.getElementById('detJamSelesai');
+
+                    selMulai.onchange = () => {
+                        const startVal = selMulai.value;
+                        const startIndex = jamOperasional.indexOf(startVal);
+                        const currentSelesai = selSelesai.value; // Simpan nilai selesai saat ini
+                        
+                        // Kosongkan dan isi ulang dropdown selesai
+                        selSelesai.innerHTML = '';
+                        jamOperasional.forEach((jam, idx) => {
+                            if (idx > startIndex) {
+                                const opt = document.createElement('option');
+                                opt.value = jam;
+                                opt.text = jam;
+                                if (jam === currentSelesai) opt.selected = true; // Jaga pilihan jika masih valid
+                                selSelesai.appendChild(opt);
+                            }
+                        });
                     };
 
                     document.getElementById('saveUpdateBtn').onclick = () => processUpdate(data);
@@ -1042,24 +1086,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function processUpdate(oldData) {
         // Ambil input terbaru dari modal
+        const inputTgl = document.getElementById('detTgl').value;
+        const inputRuang = document.getElementById('detRuang').value;
+        const mulai = document.getElementById('detJamMulai').value;
+        const selesai = document.getElementById('detJamSelesai').value;
         const inputAcara = document.getElementById('detAcara').value;
         const inputPIC = document.getElementById('detPIC').value;
         const inputPeserta = document.getElementById('detPeserta').value;
 
-        // Hitung ulang "Hari" agar tidak kosong di spreadsheet
-        let dObj;
-        // Cek apakah formatnya DD/MM/YYYY
-        if (typeof oldData.tanggal === 'string' && oldData.tanggal.includes('/')) {
-            const parts = oldData.tanggal.split('/');
-            dObj = new Date(parts[2], parts[1] - 1, parts[0]);
-        } else {
-            // Jika formatnya objek Date atau string panjang (Thu Feb 05...)
-            dObj = new Date(oldData.tanggal);
-        }
+        if (!inputTgl || !mulai || !selesai) return Swal.fire('Error', 'Data wajib diisi!', 'error');
 
-        if (isNaN(dObj.getTime())) {
-            return Swal.fire('Error', 'Data tanggal tidak terbaca dengan benar. Silakan coba refresh halaman.', 'error');
-        }
+        const dObj = new Date(inputTgl);
+        dObj.setHours(0,0,0,0);
+        const idxMulai = jamOperasional.indexOf(mulai);
+        const idxSelesai = jamOperasional.indexOf(selesai);
+        
+        if (idxSelesai <= idxMulai) return Swal.fire('Error', 'Jam selesai tidak valid!', 'error');
+
+        const isConflict = allBookedData.some(item => {
+            if (item.orderId === oldData.orderId) return false;
+            if (item.ruang !== inputRuang) return false;
+
+            let itemDate = item.tanggal.includes('/') ? 
+                new Date(item.tanggal.split('/').reverse().join('-')) : new Date(item.tanggal);
+            itemDate.setHours(0,0,0,0);
+
+            if (itemDate.getTime() !== dObj.getTime()) return false;
+
+            const [jMulaiItem, jSelesaiItem] = item.jam.split(' - ');
+            return isTimeOverlap(idxMulai, idxSelesai, jamOperasional.indexOf(jMulaiItem), jamOperasional.indexOf(jSelesaiItem));
+        });
+
+        if (isConflict) return Swal.fire('Jadwal Bentrok!', 'Ruangan sudah terisi.', 'error');
+
+        // 4. KONFIRMASI ULANG
+        const confirm = await Swal.fire({
+            title: 'Konfirmasi Perubahan',
+            text: "Apakah Anda yakin ingin memperbarui detail agenda ini?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#38a169',
+            confirmButtonText: 'Ya, Update!',
+            cancelButtonText: 'Batal'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        // Cek apakah formatnya DD/MM/YYYY
+        // if (typeof oldData.tanggal === 'string' && oldData.tanggal.includes('/')) {
+        //     const parts = oldData.tanggal.split('/');
+        //     dObj = new Date(parts[2], parts[1] - 1, parts[0]);
+        // } else {
+        //     // Jika formatnya objek Date atau string panjang (Thu Feb 05...)
+        //     dObj = new Date(oldData.tanggal);
+        // }
+
+        // if (isNaN(dObj.getTime())) {
+        //     return Swal.fire('Error', 'Data tanggal tidak terbaca dengan benar. Silakan coba refresh halaman.', 'error');
+        // }
 
         const hariIndo = dObj.toLocaleDateString('id-ID', { weekday: 'long' });
         const tglBersih = dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1070,11 +1154,12 @@ document.addEventListener('DOMContentLoaded', () => {
             "Hari": hariIndo, // Pastikan Hari disertakan kembali
             "Tanggal": tglBersih,
             "Acara": inputAcara,
-            "Jam": oldData.jam, // Gunakan jam asli agar tidak berubah
+            "Jam": `${mulai} - ${selesai}`,
             "PIC Kegiatan": inputPIC,
             "Jumlah Partisipan": inputPeserta || "",
-            "ruang": oldData.ruang,
-            "Email PIC": oldData.emailPIC
+            "ruang": inputRuang,
+            "Email PIC": oldData.emailPIC,
+            "Tipe Pesanan": oldData.tipePesanan
         };
 
         Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -1087,7 +1172,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await res.json();
 
             if (result.result === "success") {
-            Swal.fire('Berhasil!', 'Agenda telah diperbarui.', 'success').then(() => renderDailyTable());
+                await loadAndRenderAgenda(); 
+        
+                Swal.fire('Berhasil!', 'Agenda telah diperbarui.', 'success').then(() => {
+                    // Menggambar ulang tabel sesuai mode view yang aktif
+                    if (currentViewMode === 'weekly') renderWeeklyTable();
+                    else renderDailyTable();
+                });
             } else {
                 throw new Error(result.message);
             }
