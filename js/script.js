@@ -99,6 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi Utama Inisialisasi
     function initApp() {
+        const selectJamMulai = document.getElementById('jamMulai');
+        const selectJamSelesai = document.getElementById('jamSelesai');
+        const selectRuang = document.getElementById('pilihRuang'); // Pastikan ini juga ada
+        
         // Isi dropdown hanya sekali
         if (selectRuang.options.length <= 1) {
             selectRuang.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
@@ -118,6 +122,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDailyTable();
         checkLoginStatus();
         fetchHolidays();
+
+        selectJamMulai.onchange = () => {
+            const startIndex = jamOperasional.indexOf(selectJamMulai.value);
+            const savedSelesai = selectJamSelesai.value;
+
+            selectJamSelesai.innerHTML = '';
+                jamOperasional.forEach((jam, idx) => {
+                    if (idx > startIndex) {
+                        const opt = document.createElement('option');
+                        opt.value = jam;
+                        opt.text = jam;
+                        if (jam === savedSelesai) opt.selected = true;
+                        selectJamSelesai.appendChild(opt);
+                    }
+                });
+            };
     }
 
     // Menggambar Kalender di Card Kiri
@@ -972,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="form-group">
                         <label>Ruangan</label>
                         <select id="detRuang" disabled 
-                                style="background: #f8fafc; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1; -webkit-appearance: none; cursor: default;">
+                                style="background: #f8fafc; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; color: #718096; opacity: 1; cursor: default;">
                             ${daftarRuang.map(r => `<option value="${r.kode}" ${r.kode === data.ruang ? 'selected' : ''}>${r.nama}</option>`).join('')}
                         </select>
                     </div>
@@ -1014,51 +1034,82 @@ document.addEventListener('DOMContentLoaded', () => {
                     const editBtn = document.getElementById('editBtn');
                     const deleteBtn = document.getElementById('deleteBtn');
                     const saveContainer = document.getElementById('saveContainer');
-
-                    editBtn.onclick = () => {
-                        const fields = ['detTgl', 'detRuang', 'detJamMulai', 'detJamSelesai', 'detAcara', 'detPIC', 'detPeserta'];
-                        fields.forEach(id => {
-                            const el = document.getElementById(id);
-                            if (id === 'detTgl') {
-                                el.type = "date";
-                                el.value = el.getAttribute('data-iso');
-                                el.readOnly = false;
-                            } else if (el.tagName === 'SELECT') {
-                                el.disabled = false;
-                            } else {
-                                el.readOnly = false;
-                            }
-
-                            el.style.borderColor = "#3182ce";
-                            el.style.background = "#fff";
-                            el.style.color = "#000";
-                        });
-
-                        saveContainer.style.display = "block";
-                        editBtn.style.opacity = "0.5";
-                        editBtn.disabled = true;
-                    };
-
-                    const selMulai = document.getElementById('detJamMulai');
-                    selMulai.dispatchEvent(new Event('change'));
-                    const selSelesai = document.getElementById('detJamSelesai');
-
-                    selMulai.onchange = () => {
-                        const startVal = selMulai.value;
+                    const updateSelesaiOptions = (mulaiEl, selesaiEl) => {
+                        const startVal = mulaiEl.value;
                         const startIndex = jamOperasional.indexOf(startVal);
-                        const currentSelesai = selSelesai.value; // Simpan nilai selesai saat ini
-                        
-                        // Kosongkan dan isi ulang dropdown selesai
-                        selSelesai.innerHTML = '';
+                        const currentSelesai = selesaiEl.value;
+
+                        selesaiEl.innerHTML = '';
                         jamOperasional.forEach((jam, idx) => {
                             if (idx > startIndex) {
                                 const opt = document.createElement('option');
                                 opt.value = jam;
                                 opt.text = jam;
-                                if (jam === currentSelesai) opt.selected = true; // Jaga pilihan jika masih valid
-                                selSelesai.appendChild(opt);
+                                if (jam === currentSelesai) opt.selected = true;
+                                selesaiEl.appendChild(opt);
                             }
                         });
+                    };
+
+                    const selMulai = document.getElementById('detJamMulai');
+                    const selSelesai = document.getElementById('detJamSelesai');
+
+                    selMulai.onchange = () => updateSelesaiOptions(selMulai, selSelesai);
+
+                    editBtn.onclick = () => {
+                        const isEditMode = saveContainer.style.display === "block";
+                        const fields = ['detTgl', 'detRuang', 'detJamMulai', 'detJamSelesai', 'detAcara', 'detPIC', 'detPeserta'];
+                        if (!isEditMode) {
+                            fields.forEach(id => {
+                                const el = document.getElementById(id);
+                                if (id === 'detTgl') {
+                                    el.type = "date";
+                                    const today = new Date().toISOString().split('T')[0];
+                                    el.value = today;
+                                    el.readOnly = false;
+                                } else if (el.tagName === 'SELECT') {
+                                    el.disabled = false;
+                                } else {
+                                    el.readOnly = false;
+                                }
+
+                                el.style.borderColor = "#3182ce";
+                                el.style.background = "#fff";
+                                el.style.color = "#000";
+                            });
+
+                            saveContainer.style.display = "block";
+                            editBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>`;
+                            updateSelesaiOptions(selMulai, selSelesai);
+                            selMulai.dispatchEvent(new Event('change'));
+
+                        } else {
+                            fields.forEach(id => {
+                                const el = document.getElementById(id);
+                                if (id === 'detTgl') {
+                                    el.type = "text";
+                                    el.value = tanggalFormatted;
+                                    el.readOnly = true;
+                                } else if (el.tagName === 'SELECT') {
+                                    el.disabled = true;
+                                    el.value = (id === 'detRuang') ? data.ruang : (id === 'detJamMulai' ? data.jam.split(' - ')[0] : data.jam.split(' - ')[1]);
+                                } else {
+                                    el.readOnly = true;
+                                    el.value = (id === 'detAcara') ? data.acara : (id === 'detPIC' ? data.pic : data.peserta);
+                                }
+                                el.style.borderColor = "#e2e8f0";
+                                el.style.background = "#f8fafc";
+                                el.style.color = "#718096";
+
+                                if (el.tagName === 'SELECT') {
+                                    el.disabled = true;
+                                    el.style.cursor = "default";
+                                }
+                            });
+
+                            saveContainer.style.display = "none";
+                            editBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+                        }
                     };
 
                     document.getElementById('saveUpdateBtn').onclick = () => processUpdate(data);
@@ -1131,19 +1182,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (!confirm.isConfirmed) return;
-
-        // Cek apakah formatnya DD/MM/YYYY
-        // if (typeof oldData.tanggal === 'string' && oldData.tanggal.includes('/')) {
-        //     const parts = oldData.tanggal.split('/');
-        //     dObj = new Date(parts[2], parts[1] - 1, parts[0]);
-        // } else {
-        //     // Jika formatnya objek Date atau string panjang (Thu Feb 05...)
-        //     dObj = new Date(oldData.tanggal);
-        // }
-
-        // if (isNaN(dObj.getTime())) {
-        //     return Swal.fire('Error', 'Data tanggal tidak terbaca dengan benar. Silakan coba refresh halaman.', 'error');
-        // }
 
         const hariIndo = dObj.toLocaleDateString('id-ID', { weekday: 'long' });
         const tglBersih = dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
