@@ -71,8 +71,7 @@ const DOSEN_MAP = {
     "Dwi Sapto Wardoyo, S.E.": "dwi.sapto@ugm.ac.id",
     "Sigit Munjani": "sigitm@ugm.ac.id",
     "Helmy Noor Ardian, S.Kom.": "helmy@ugm.ac.id",
-    "Afiat Edy Darmawan": "afiat@ugm.ac.id",
-    "Calvin": "calvinwjy81@gmail.com"
+    "Afiat Edy Darmawan": "afiat@ugm.ac.id"
 };
 
 // 2. DOM CONTENT LOADED
