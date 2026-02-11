@@ -402,7 +402,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- 2a. LOGIKA VALIDASI DURASI & H-3 (KHUSUS NON-ADMIN) ---
         if (!isAdmin) {
-            const durasiJam = idxSelesai - idxMulai;
+            const menitMulai = timeToMinutes(waktuMulaiStr);
+            const menitSelesai = timeToMinutes(waktuSelesaiStr);
+            const durasiJam = (menitSelesai - menitMulai) / 60; // Konversi selisih menit ke jam
             
             // Hitung selisih hari (H-x)
             const diffTime = tglInput - today;
