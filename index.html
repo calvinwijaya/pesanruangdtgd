@@ -220,6 +220,27 @@
                 </div>
 
                 <button type="submit" class="btn-submit">Pesan Sekarang</button>
+
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                    <div id="toggleCC" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px 0; color: #1a3a5f; font-weight: 600;">
+                        <span id="arrowCC" style="transition: transform 0.3s;">▶</span> Kirim Notifikasi Pesan Ruang (CC)
+                    </div>
+                    
+                    <div id="dropdownCCContainer" style="display: none; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label>Pilih Dosen/Tendik 1:</label>
+                            <select id="ccDosen1" class="form-control">
+                                <option value="">-- Tanpa CC --</option>
+                                </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pilih Dosen/Tendik 2:</label>
+                            <select id="ccDosen2" class="form-control">
+                                <option value="">-- Tanpa CC --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
     </div>

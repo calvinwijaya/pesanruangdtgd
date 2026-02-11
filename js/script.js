@@ -41,6 +41,40 @@ function handleCredentialResponse(response) {
     });
 }
 
+// Nama dan email dosen untuk send notification
+const DOSEN_MAP = {
+    "Prof. Dr. Ir. Harintaka, S.T., M.T., IPU., ASEAN Eng.": "harintaka@ugm.ac.id",
+    "Prof. Ir. Nurrohmat Widjajanti, M.T., Ph.D., IPU., ASEAN Eng., APEC Eng.": "nwidjajanti@ugm.ac.id",
+    "Dr. Ir. Catur Aries Rokhmana, S.T., M.T., IPU.": "caris@ugm.ac.id",
+    "Dr. Ir. Yulaikhah, S.T., M.T., IPU.": "yulaikhah@ugm.ac.id",
+    "Prof. Ir. Leni Sophia Heliani, S.T., M.Sc., D.Sc., IPU.": "lheliani@ugm.ac.id",
+    "Dr. Ir. Bilal Ma’ruf, S.T., M.T.": "bilal.maruf@ugm.ac.id",
+    "Prof. Ir. Trias Aditya K.M., S.T., M.Sc., Ph.D., IPU., ASEAN Eng.": "triasaditya@ugm.ac.id",
+    "Ir. Rochmad Muryamto, M.Eng. Sc.": "rochmad_mury@ugm.ac.id",
+    "Dr. Ir. Diyono, S.T., M.T., IPU.": "diyono@ugm.ac.id",
+    "Ir. Abdul Basith, S.T., M.Si., Ph.D.": "abd_basith@ugm.ac.id",
+    "Ir. Heri Sutanta, S.T., M.Sc., Ph.D.": "herisutanta@ugm.ac.id",
+    "Dr.Eng. Ir. Purnama Budi Santosa, ST, M.App.Sc., IPU.": "purnamabs@ugm.ac.id",
+    "Ir. I Made Andi Arsana, S.T., ME., Ph.D.": "madeandi@ugm.ac.id",
+    "Ir. Ruli Andaru, S.T., M.Eng., Ph.D.": "ruliandaru@ugm.ac.id",
+    "Dr. Ir. Dwi Lestari, S.T., M.E., IPM.": "dwilestari@ugm.ac.id",
+    "Dr. Dedi Atunggal S.P., S.T., M.Sc.": "dediatunggal@ugm.ac.id",
+    "Dr. Ir. Bambang Kun Cahyono, S.T., M.Sc., IPU.": "bambangkun@ugm.ac.id",
+    "Cecep Pratama, S.Si., M.Si., D.Sc.": "cecep.pratama@ugm.ac.id",
+    "Calvin Wijaya, S.T., M.Eng.": "calvin.wijaya@mail.ugm.ac.id",
+    "Dany Puguh Laksono, S.T., M.Eng.": "danylaksono@ugm.ac.id",
+    "Ir. Maritsa Faridatunnisa, S.T., M.Eng.": "maritsa.faridatunnisa@ugm.ac.id",
+    "Ir. Hilmiyati Ulinnuha, S.T., M.Eng.": "hilmiyatiulinnuha01@ugm.ac.id",
+    "Ir. Febrian Fitryanik Susanta, S.T., M.Eng.": "febrian.fitryanik.s@ugm.ac.id",
+    "Mohamad Bagas Setiawan, S.T., M.Eng.": "mohamad.bagas.s@mail.ugm.ac.id",
+    "Ressy Fitria, S.T., M.Sc.Eng.": "ressyfitria@ugm.ac.id",
+    "Dwi Sapto Wardoyo, S.E.": "dwi.sapto@ugm.ac.id",
+    "Sigit Munjani": "sigitm@ugm.ac.id",
+    "Helmy Noor Ardian, S.Kom.": "helmy@ugm.ac.id",
+    "Afiat Edy Darmawan": "afiat@ugm.ac.id",
+    "Calvin": "calvinwjy81@gmail.com"
+};
+
 // 2. DOM CONTENT LOADED
 document.addEventListener('DOMContentLoaded', () => {
     // State Aplikasi
@@ -395,6 +429,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const jumlahPartisipan = document.getElementById('jumlahPartisipan').value;
 
+        // Tambahan CC
+        const cc1 = document.getElementById('ccDosen1').value;
+        const cc2 = document.getElementById('ccDosen2').value;
+        let ccList = [cc1, cc2].filter(email => email !== "").join(",");
+
         // 2. Validasi Jam Dasar (Tetap sama)
         if (timeToMinutes(waktuSelesaiStr) <= timeToMinutes(waktuMulaiStr)) {
             return Swal.fire('Error', 'Waktu selesai harus setelah waktu mulai!', 'error');
@@ -476,7 +515,8 @@ document.addEventListener('DOMContentLoaded', () => {
             "PIC Kegiatan": document.getElementById('picKegiatan').value,
             "Jumlah Partisipan": document.getElementById('jumlahPartisipan').value || "",
             "Email PIC": user.email || "",
-            "ruang": selectRuang.value
+            "ruang": selectRuang.value,
+            "CC Emails": ccList,
         };
 
         if (mode === 'harian') {
@@ -535,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycbxIs5orlEzZVrXCx5w-AM3esPaIDcOq_t4LK9xf-djKcVxDRSVcuIUMg9wDDiTF43ED/exec", {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec", {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -609,6 +649,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return dates;
     }
+
+    // helper untuk CC email
+    document.getElementById('toggleCC').onclick = function() {
+        const container = document.getElementById('dropdownCCContainer');
+        const arrow = document.getElementById('arrowCC');
+        if (container.style.display === "none") {
+            container.style.display = "block";
+            arrow.style.transform = "rotate(90deg)";
+        } else {
+            container.style.display = "none";
+            arrow.style.transform = "rotate(0deg)";
+        }
+    };
+
+    // Isi pilihan dropdown secara otomatis saat load
+    function populateCCDropdowns() {
+        const selects = [document.getElementById('ccDosen1'), document.getElementById('ccDosen2')];
+        selects.forEach(select => {
+            select.innerHTML = '<option value="">-- Tanpa CC --</option>';
+            for (const nama in DOSEN_MAP) {
+                let opt = document.createElement('option');
+                opt.value = DOSEN_MAP[nama];
+                opt.innerHTML = nama;
+                select.appendChild(opt);
+            }
+        });
+    }
+    populateCCDropdowns();
 
     // Window untuk ganti tipe pemesanan ruang
     window.switchBookingTab = (mode) => {
@@ -811,6 +879,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnOpen.classList.contains('disabled')) {
             Swal.fire('Akses Terbatas', 'Silakan Login terlebih dahulu.', 'warning');
         } else {
+            const toggleCC = document.getElementById('toggleCC');
+            if (toggleCC) toggleCC.style.display = 'flex';
+            
+            // Reset Dropdown ke kondisi tertutup
+            const container = document.getElementById('dropdownCCContainer');
+            const arrow = document.getElementById('arrowCC');
+            if (container) container.style.display = 'none';
+            if (arrow) arrow.style.transform = "rotate(0deg)";
+            
+            // Reset pilihan dosen
+            document.getElementById('dropdownCCContainer').style.display = 'none';
+            document.getElementById('ccDosen1').value = "";
+            document.getElementById('ccDosen2').value = "";
+
             modal.style.display = "block";
             const user = JSON.parse(sessionStorage.getItem("user"));
             if(user) document.getElementById('picKegiatan').value = user.nama || "";
@@ -974,6 +1056,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi untuk menunjukkan detail modal
     async function showDetailModal(data) {
+        // sembunyikan cc
+        const toggleCC = document.getElementById('toggleCC');
+        if (toggleCC) toggleCC.style.display = 'none';
+        
+        // Pastikan container dropdown tertutup
+        const ccContainer = document.getElementById('dropdownCCContainer');
+        if (ccContainer) ccContainer.style.display = 'none';
+
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
         const userEmail = user.email ? user.email.toLowerCase().trim() : "";
         
@@ -1273,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycbxIs5orlEzZVrXCx5w-AM3esPaIDcOq_t4LK9xf-djKcVxDRSVcuIUMg9wDDiTF43ED/exec", { method: "POST", body: fd });
+            const res = await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec", { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -1307,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycbxIs5orlEzZVrXCx5w-AM3esPaIDcOq_t4LK9xf-djKcVxDRSVcuIUMg9wDDiTF43ED/exec", { method: "POST", body: fd });
+            await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec", { method: "POST", body: fd });
             await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
@@ -1670,7 +1760,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAgendaData() {
         showTableLoading();
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbxIs5orlEzZVrXCx5w-AM3esPaIDcOq_t4LK9xf-djKcVxDRSVcuIUMg9wDDiTF43ED/exec?t=" + Date.now());
+            const response = await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec?t=" + Date.now());
             const rawData = await response.json();
             
             // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
