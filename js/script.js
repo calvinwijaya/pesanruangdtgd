@@ -41,40 +41,6 @@ function handleCredentialResponse(response) {
     });
 }
 
-// Nama dan email dosen untuk send notification
-const DOSEN_MAP = {
-    "Prof. Dr. Ir. Harintaka, S.T., M.T., IPU., ASEAN Eng.": "harintaka@ugm.ac.id",
-    "Prof. Ir. Nurrohmat Widjajanti, M.T., Ph.D., IPU., ASEAN Eng., APEC Eng.": "nwidjajanti@ugm.ac.id",
-    "Dr. Ir. Catur Aries Rokhmana, S.T., M.T., IPU.": "caris@ugm.ac.id",
-    "Dr. Ir. Yulaikhah, S.T., M.T., IPU.": "yulaikhah@ugm.ac.id",
-    "Prof. Ir. Leni Sophia Heliani, S.T., M.Sc., D.Sc., IPU.": "lheliani@ugm.ac.id",
-    "Dr. Ir. Bilal Ma’ruf, S.T., M.T.": "bilal.maruf@ugm.ac.id",
-    "Prof. Ir. Trias Aditya K.M., S.T., M.Sc., Ph.D., IPU., ASEAN Eng.": "triasaditya@ugm.ac.id",
-    "Ir. Rochmad Muryamto, M.Eng. Sc.": "rochmad_mury@ugm.ac.id",
-    "Dr. Ir. Diyono, S.T., M.T., IPU.": "diyono@ugm.ac.id",
-    "Ir. Abdul Basith, S.T., M.Si., Ph.D.": "abd_basith@ugm.ac.id",
-    "Ir. Heri Sutanta, S.T., M.Sc., Ph.D.": "herisutanta@ugm.ac.id",
-    "Dr.Eng. Ir. Purnama Budi Santosa, ST, M.App.Sc., IPU.": "purnamabs@ugm.ac.id",
-    "Ir. I Made Andi Arsana, S.T., ME., Ph.D.": "madeandi@ugm.ac.id",
-    "Ir. Ruli Andaru, S.T., M.Eng., Ph.D.": "ruliandaru@ugm.ac.id",
-    "Dr. Ir. Dwi Lestari, S.T., M.E., IPM.": "dwilestari@ugm.ac.id",
-    "Dr. Dedi Atunggal S.P., S.T., M.Sc.": "dediatunggal@ugm.ac.id",
-    "Dr. Ir. Bambang Kun Cahyono, S.T., M.Sc., IPU.": "bambangkun@ugm.ac.id",
-    "Cecep Pratama, S.Si., M.Si., D.Sc.": "cecep.pratama@ugm.ac.id",
-    "Calvin Wijaya, S.T., M.Eng.": "calvin.wijaya@mail.ugm.ac.id",
-    "Dany Puguh Laksono, S.T., M.Eng.": "danylaksono@ugm.ac.id",
-    "Ir. Maritsa Faridatunnisa, S.T., M.Eng.": "maritsa.faridatunnisa@ugm.ac.id",
-    "Ir. Hilmiyati Ulinnuha, S.T., M.Eng.": "hilmiyatiulinnuha01@ugm.ac.id",
-    "Ir. Febrian Fitryanik Susanta, S.T., M.Eng.": "febrian.fitryanik.s@ugm.ac.id",
-    "Mohamad Bagas Setiawan, S.T., M.Eng.": "mohamad.bagas.s@mail.ugm.ac.id",
-    "Ressy Fitria, S.T., M.Sc.Eng.": "ressyfitria@ugm.ac.id",
-    "Dwi Sapto Wardoyo, S.E.": "dwi.sapto@ugm.ac.id",
-    "Sigit Munjani": "sigitm@ugm.ac.id",
-    "Helmy Noor Ardian, S.Kom.": "helmy@ugm.ac.id",
-    "Afiat Edy Darmawan": "afiat@ugm.ac.id",
-    "Hanifah Dwi Yuniati, S.Pd.": "hanifahdwi@ugm.ac.id"
-};
-
 // 2. DOM CONTENT LOADED
 document.addEventListener('DOMContentLoaded', () => {
     // State Aplikasi
@@ -85,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentViewMode = 'daily';
     let listDateAnchor = new Date(selectedDate);
     let bookingByDate = {};
+    let DOSEN_MAP = {};
 
     // Definisi Elemen
     const calendarUI = document.getElementById('calendar-ui');
@@ -429,12 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const jumlahPartisipan = document.getElementById('jumlahPartisipan').value;
 
-        // Tambahan CC
-        const cc1 = document.getElementById('ccDosen1').value;
-        const cc2 = document.getElementById('ccDosen2').value;
-        const cc3 = document.getElementById('ccDosen3').value;
-        let ccList = [cc1, cc2, cc3].filter(email => email !== "").join(",");
-
         // 2. Validasi Jam Dasar (Tetap sama)
         if (timeToMinutes(waktuSelesaiStr) <= timeToMinutes(waktuMulaiStr)) {
             return Swal.fire('Error', 'Waktu selesai harus setelah waktu mulai!', 'error');
@@ -504,6 +465,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- 2c. LOGIKA VALIDASI KAPASITAS RUANG ---
         if (!validateRoomCapacity(ruang, jumlahPartisipan, isAdmin)) {
             return;
+        }
+
+        // --- 2d. Terkait CC ---
+        const modeCC = document.getElementById('modeCC').value;
+        const ccList = getCCList();
+        const ccArray = ccList.split(',').filter(email => email !== "");
+
+        // KONFIRMASI TAMBAHAN UNTUK CC MASAL
+        if (modeCC === 'seluruh') {
+            const confirmCC = await Swal.fire({
+                title: 'Konfirmasi Pengiriman Massal',
+                text: `Anda akan mengirimkan notifikasi ini kepada SELURUH DOSEN (${ccArray.length} orang). Lanjutkan?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Kirim ke Seluruh Dosen',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#3085d6'
+            });
+
+            if (!confirmCC.isConfirmed) return; // Stop jika user ragu
         }
         
         // 3. Konfirmasi & Loading (Baru dijalankan jika tidak bentrok)
@@ -663,21 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
             arrow.style.transform = "rotate(0deg)";
         }
     };
-
-    // Isi pilihan dropdown secara otomatis saat load
-    function populateCCDropdowns() {
-        const selects = [document.getElementById('ccDosen1'), document.getElementById('ccDosen2'), document.getElementById('ccDosen3')];
-        selects.forEach(select => {
-            select.innerHTML = '<option value="">-- Tanpa CC --</option>';
-            for (const nama in DOSEN_MAP) {
-                let opt = document.createElement('option');
-                opt.value = DOSEN_MAP[nama];
-                opt.innerHTML = nama;
-                select.appendChild(opt);
-            }
-        });
-    }
-    populateCCDropdowns();
 
     // Window untuk ganti tipe pemesanan ruang
     window.switchBookingTab = (mode) => {
@@ -891,9 +857,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Reset pilihan dosen
             document.getElementById('dropdownCCContainer').style.display = 'none';
+            document.getElementById('modeCC').value = 'individu';
+            toggleCCMode();
             document.getElementById('ccDosen1').value = "";
             document.getElementById('ccDosen2').value = "";
             document.getElementById('ccDosen3').value = "";
+            document.getElementById('selectLab').selectedIndex = 0;
 
             modal.style.display = "block";
             const user = JSON.parse(sessionStorage.getItem("user"));
@@ -1775,6 +1744,74 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             hideTableLoading();
         }
+    }
+
+    // Fungsi baru untuk memanggil dosen untuk cc
+    async function loadDosenData() {
+        try {
+            const response = await fetch("https://script.google.com/macros/s/AKfycbyhXV7JLriFYitwEkl-1bzSbiphnZDlpBQEgS1Ii_rlvZZvkIOQSZl4wHF9K2SF6Jz6/exec");
+            DOSEN_MAP = await response.json();
+            populateCCDropdowns();
+        } catch (err) {
+            console.error("Gagal memuat data dosen:", err);
+        }
+    }
+
+    loadDosenData();
+
+    // Toggle tampilan berdasarkan mode
+    window.toggleCCMode = function() {
+        const mode = document.getElementById('modeCC').value;
+        const individuContainer = document.getElementById('individuCCContainer');
+        const labContainer = document.getElementById('groupLabContainer');
+        
+        if (individuContainer) individuContainer.style.display = (mode === 'individu') ? 'block' : 'none';
+        if (labContainer) labContainer.style.display = (mode === 'lab') ? 'block' : 'none';
+    };
+
+    // Isi pilihan dropdown secara otomatis saat load
+    function populateCCDropdowns() {
+        const selects = [
+            document.getElementById('ccDosen1'), 
+            document.getElementById('ccDosen2'), 
+            document.getElementById('ccDosen3')
+        ];
+        
+        selects.forEach(select => {
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Tanpa CC --</option>';
+            
+            for (const nama in DOSEN_MAP) {
+                const d = DOSEN_MAP[nama];
+                let opt = document.createElement('option');
+                opt.value = d.email;
+                opt.innerHTML = `${nama} (${d.status})`; 
+                select.appendChild(opt);
+            }
+        });
+    }
+
+    function getCCList() {
+        const mode = document.getElementById('modeCC').value;
+        let emails = [];
+
+        if (mode === 'individu') {
+            emails = [
+                document.getElementById('ccDosen1').value,
+                document.getElementById('ccDosen2').value,
+                document.getElementById('ccDosen3').value
+            ];
+        } else if (mode === 'seluruh') {
+            emails = Object.values(DOSEN_MAP)
+                .filter(d => d.status && d.status.toLowerCase().trim() === "dosen")
+                .map(d => d.email);
+        } else if (mode === 'lab') {
+            const selectedLab = document.getElementById('selectLab').value;
+            emails = Object.values(DOSEN_MAP)
+                .filter(d => d.lab === selectedLab)
+                .map(d => d.email);
+        }
+        return emails.filter(email => email !== "").join(",");
     }
 
 });

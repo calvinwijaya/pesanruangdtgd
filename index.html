@@ -226,24 +226,31 @@
                         <span id="arrowCC" style="transition: transform 0.3s;">▶</span> Kirim Notifikasi Pesan Ruang (CC)
                     </div>
                     
-                    <div id="dropdownCCContainer" style="display: none; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 15px;">
+                    <div id="dropdownCCContainer" style="display: none; padding: 15px; background: #f8fafc; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
                         <div class="form-group">
-                            <label>Pilih Dosen/Tendik 1:</label>
-                            <select id="ccDosen1" class="form-control">
-                                <option value="">-- Tanpa CC --</option>
-                                </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Pilih Dosen/Tendik 2:</label>
-                            <select id="ccDosen2" class="form-control">
-                                <option value="">-- Tanpa CC --</option>
+                            <label style="font-weight: bold;">Kirim Notifikasi Ke:</label>
+                            <select id="modeCC" class="form-control" onchange="toggleCCMode()">
+                                <option value="individu">Perorangan (Maks 3)</option>
+                                <option value="seluruh">Seluruh Dosen</option>
+                                <option value="lab">Berdasarkan Lab</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Pilih Dosen/Tendik 3:</label>
-                            <select id="ccDosen3" class="form-control">
-                                <option value="">-- Tanpa CC --</option>
+
+                        <div id="groupLabContainer" style="display: none;" class="form-group">
+                            <label>Pilih Lab:</label>
+                            <select id="selectLab" class="form-control">
+                                <option value="Teknik Fotogrametri dan Penginderaan Jauh">Teknik Fotogrametri dan Penginderaan Jauh</option>
+                                <option value="Kadaster dan Teknik Geoinformatika">Kadaster dan Teknik Geoinformatika</option>
+                                <option value="Survei Keteknikan">Survei Keteknikan</option>
+                                <option value="Survei Hidrografi">Survei Hidrografi</option>
+                                <option value="Geodesi Geometri dan Geodesi Fisis">Geodesi Geometri dan Geodesi Fisis</option>
                             </select>
+                        </div>
+
+                        <div id="individuCCContainer">
+                            <div class="form-group"><label>Dosen/Tendik 1:</label><select id="ccDosen1" class="form-control"><option value="">-- Tanpa CC --</option></select></div>
+                            <div class="form-group"><label>Dosen/Tendik 2:</label><select id="ccDosen2" class="form-control"><option value="">-- Tanpa CC --</option></select></div>
+                            <div class="form-group"><label>Dosen/Tendik 3:</label><select id="ccDosen3" class="form-control"><option value="">-- Tanpa CC --</option></select></div>
                         </div>
                     </div>
                 </div>
