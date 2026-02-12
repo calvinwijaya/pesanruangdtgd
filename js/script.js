@@ -71,7 +71,8 @@ const DOSEN_MAP = {
     "Dwi Sapto Wardoyo, S.E.": "dwi.sapto@ugm.ac.id",
     "Sigit Munjani": "sigitm@ugm.ac.id",
     "Helmy Noor Ardian, S.Kom.": "helmy@ugm.ac.id",
-    "Afiat Edy Darmawan": "afiat@ugm.ac.id"
+    "Afiat Edy Darmawan": "afiat@ugm.ac.id",
+    "Hanifah Dwi Yuniati, S.Pd.": "hanifahdwi@ugm.ac.id"
 };
 
 // 2. DOM CONTENT LOADED
@@ -431,7 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Tambahan CC
         const cc1 = document.getElementById('ccDosen1').value;
         const cc2 = document.getElementById('ccDosen2').value;
-        let ccList = [cc1, cc2].filter(email => email !== "").join(",");
+        const cc3 = document.getElementById('ccDosen3').value;
+        let ccList = [cc1, cc2, cc3].filter(email => email !== "").join(",");
 
         // 2. Validasi Jam Dasar (Tetap sama)
         if (timeToMinutes(waktuSelesaiStr) <= timeToMinutes(waktuMulaiStr)) {
@@ -664,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Isi pilihan dropdown secara otomatis saat load
     function populateCCDropdowns() {
-        const selects = [document.getElementById('ccDosen1'), document.getElementById('ccDosen2')];
+        const selects = [document.getElementById('ccDosen1'), document.getElementById('ccDosen2'), document.getElementById('ccDosen3')];
         selects.forEach(select => {
             select.innerHTML = '<option value="">-- Tanpa CC --</option>';
             for (const nama in DOSEN_MAP) {
@@ -891,6 +893,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('dropdownCCContainer').style.display = 'none';
             document.getElementById('ccDosen1').value = "";
             document.getElementById('ccDosen2').value = "";
+            document.getElementById('ccDosen3').value = "";
 
             modal.style.display = "block";
             const user = JSON.parse(sessionStorage.getItem("user"));
