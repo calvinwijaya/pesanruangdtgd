@@ -972,20 +972,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnFilter = document.getElementById('btnFilterRuang');
     if (btnFilter) {
         btnFilter.onclick = async () => {
+            const grupRuang = {
+                "Ruang Kuliah": ["1.1", "III.1", "III.2", "III.3", "III.4", "III.5", "III.6"],
+                "Ruang Sidang/ Rapat": ["RS.1", "RS.2", "RS.3", "R. Pengurus", "R. Sidang SURTA", "R. Bersama"],
+                "Ruang Lab": ["Lab GGGF", "Lab Foto", "Lab. Hidro", "Lab CAGE", "Lab Geokom"]
+            };
             const { value: selectedKodes } = await Swal.fire({
                 title: 'Filter Ruangan',
+                width: '500px',
                 html: `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                         <button type="button" class="swal2-confirm swal2-styled" style="margin:0; padding: 5px 10px; font-size: 0.8rem; background-color: #4a5568;" id="selectAll">Pilih Semua</button>
                         <button type="button" class="swal2-cancel swal2-styled" style="margin:0; padding: 5px 10px; font-size: 0.8rem; background-color: #a0aec0;" id="deselectAll">Hapus Semua</button>
                     </div>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding: 10px; background: #f7fafc; border-radius: 8px; justify-content: center;">
+                        ${Object.keys(grupRuang).map(grup => {
+                            // CEK: Apakah semua ruangan dalam grup ini sedang aktif difilter?
+                            const kodesDalamGrup = grupRuang[grup];
+                            const isGrupChecked = kodesDalamGrup.every(kode => 
+                                filterRuangAktif.some(akt => akt.kode === kode)
+                            );
+                            
+                            return `
+                                <label style="cursor:pointer; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; color: #2d3748;">
+                                    <input type="checkbox" class="grup-checkbox" data-grup="${grup}" ${isGrupChecked ? 'checked' : ''}> ${grup}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
                     
-                    <div id="filter-checkboxes" style="display: grid; grid-template-columns: 1fr 1fr; text-align: left; gap: 10px; font-size: 0.9rem; max-height: 300px; overflow-y: auto; padding: 5px;">
+                    <div id="filter-checkboxes" style="display: grid; grid-template-columns: 1fr 1fr; text-align: left; gap: 10px; font-size: 0.9rem; max-height: 250px; overflow-y: auto; padding: 5px; border: 1px solid #edf2f7; border-radius: 6px;">
                         ${daftarRuang.map(r => {
                             const isChecked = filterRuangAktif.some(akt => akt.kode === r.kode);
+                            let kategori = "";
+                            for (let g in grupRuang) {
+                                if (grupRuang[g].includes(r.kode)) { kategori = g; break; }
+                            }
                             return `
                                 <label style="cursor:pointer; display: flex; align-items: center; gap: 8px;">
-                                    <input type="checkbox" value="${r.kode}" ${isChecked ? 'checked' : ''}> 
+                                    <input type="checkbox" class="room-checkbox" value="${r.kode}" data-kategori="${kategori}" ${isChecked ? 'checked' : ''}> 
                                     <span>${r.nama}</span>
                                 </label>
                             `;
@@ -994,19 +1020,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 showCancelButton: true,
                 confirmButtonText: 'Terapkan Filter',
                 didOpen: () => {
-                    // Logika Pilih Semua
+                    const roomCB = document.querySelectorAll('.room-checkbox');
+                    const grupCB = document.querySelectorAll('.grup-checkbox');
+
+                    // 1. Logika Pilih Semua / Hapus Semua
                     document.getElementById('selectAll').onclick = () => {
-                        const checkboxes = document.querySelectorAll('#filter-checkboxes input[type="checkbox"]');
-                        checkboxes.forEach(cb => cb.checked = true);
+                        roomCB.forEach(cb => cb.checked = true);
+                        grupCB.forEach(cb => cb.checked = true);
                     };
-                    // Logika Hapus Semua
                     document.getElementById('deselectAll').onclick = () => {
-                        const checkboxes = document.querySelectorAll('#filter-checkboxes input[type="checkbox"]');
-                        checkboxes.forEach(cb => cb.checked = false);
+                        roomCB.forEach(cb => cb.checked = false);
+                        grupCB.forEach(cb => cb.checked = false);
                     };
+
+                    // 2. Logika Grup Centang (Parent ke Child)
+                    grupCB.forEach(gCB => {
+                        gCB.onchange = (e) => {
+                            const namaGrup = e.target.getAttribute('data-grup');
+                            const targetRooms = grupRuang[namaGrup];
+                            roomCB.forEach(rCB => {
+                                if (targetRooms.includes(rCB.value)) {
+                                    rCB.checked = e.target.checked;
+                                }
+                            });
+                        };
+                    });
+
+                    // 3. Logika Centang Satuan (Child ke Parent)
+                    roomCB.forEach(rCB => {
+                        rCB.onchange = () => {
+                            const kat = rCB.getAttribute('data-kategori');
+                            if (!kat) return;
+                            
+                            const parentGrup = document.querySelector(`.grup-checkbox[data-grup="${kat}"]`);
+                            const siblings = Array.from(document.querySelectorAll(`.room-checkbox[data-kategori="${kat}"]`));
+                            
+                            // Jika semua sibling dicentang, parent centang. Jika ada satu lepas, parent lepas.
+                            const allChecked = siblings.every(s => s.checked);
+                            parentGrup.checked = allChecked;
+                        };
+                    });
                 },
                 preConfirm: () => {
-                    const checkedKodes = Array.from(document.querySelectorAll('#filter-checkboxes input:checked')).map(el => el.value);
+                    const checkedKodes = Array.from(document.querySelectorAll('.room-checkbox:checked')).map(el => el.value);
                     if (checkedKodes.length === 0) {
                         Swal.showValidationMessage('Pilih minimal satu ruangan!');
                     }
