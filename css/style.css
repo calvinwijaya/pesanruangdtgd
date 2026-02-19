@@ -26,6 +26,22 @@ body {
     align-items: center;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-header {
+    height: 45px; 
+    width: auto;
+    object-fit: contain; 
+}
+
+.header-left h1 {
+    margin: 0;
+}
+
 .dashboard-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -775,3 +791,120 @@ body.modal-open {
 .swal-title-custom { color: #1a3a5f !important; font-weight: 700; font-size: 1.5rem; }
 
 .watermark { text-align: center; margin-top: 30px; color: #a0aec0; font-size: 0.8rem; letter-spacing: 1px; }
+
+/* Tooltip */
+.tooltip-content {
+    overflow: visible !important;
+    visibility: hidden;
+    opacity: 0;
+    position: fixed;
+    width: 260px;
+    background-color: #ffffff;
+    color: #1a3a5f;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    z-index: 9999 !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    pointer-events: none; 
+    transition: opacity 0.15s ease;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    white-space: normal;
+    text-align: left;
+    filter: none !important; 
+}
+
+.tooltip-content {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-content b {
+    color: #2d3748;
+    display: inline-block;
+    width: 70px;
+}
+
+/* Style baru */
+/* --- TIGHT LAYOUT MODIFIER (UPDATED) --- */
+
+/* 1. Hilangkan canvas putih & matikan min-width 2500px */
+#agendaTable.tight-layout {
+    min-width: 0 !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+}
+
+/* 2. Kolom Jam (Kiri) - Pertahankan tinggi baris */
+#agendaTable.tight-layout th:first-child, 
+#agendaTable.tight-layout td:first-child {
+    width: 50px !important; 
+    padding: 12px 2px !important;
+}
+
+/* 3. Sel Tabel Ruangan - Pertahankan tinggi baris */
+#agendaTable.tight-layout th:not(:first-child), 
+#agendaTable.tight-layout td:not(:first-child) {
+    width: auto !important; /* Biarkan browser membagi sisa layar rata ke 18 kolom */
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    overflow: hidden !important; /* Tahan elemen di dalam agar tidak mendesak kolom ke luar */
+}
+
+/* 4. Header: Nama Ruang & Kapasitas (Vertikal + Jarak ke tabel) */
+#agendaTable.tight-layout th:not(:first-child) {
+    height: 120px; /* <--- UBAH INI: Kurangi dari 160px jadi 120px atau 110px */
+    vertical-align: bottom;
+    padding-bottom: 8px !important; 
+    overflow: hidden !important; 
+}
+
+/* Terapkan orientasi vertikal untuk semua div di dalam header ruangan */
+#agendaTable.tight-layout th:not(:first-child) div:first-child {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin: 0 auto;
+    white-space: nowrap; /* Nama ruang tetap 1 baris vertikal */
+    font-size: 0.8rem !important;
+    margin-bottom: 8px !important; /* Jarak antara nama dan kapasitas */
+}
+
+#agendaTable.tight-layout th:not(:first-child) div:last-child {
+    writing-mode: horizontal-tb !important; /* Kembalikan ke horizontal */
+    transform: none !important;
+    font-size: 0.55rem !important; /* Perkecil font agar muat di kolom sempit */
+    white-space: normal !important; /* Kunci utama 2: Izinkan teks turun ke baris baru (wrap) */
+    word-wrap: break-word !important;
+    line-height: 1.2 !important;
+    color: #718096 !important;
+    display: block !important;
+    margin: 0 auto;
+    width: 100%; 
+}
+
+/* 5. Styling Blok Agenda di dalam sel */
+#agendaTable.tight-layout .agenda-block {
+    padding: 2px;
+    font-size: 0.55rem;
+}
+
+#agendaTable.tight-layout .agenda-block strong {
+    font-size: 0.6rem;
+    line-height: 1.1;
+    margin-bottom: 2px;
+    /* Membatasi teks acara maksimal 2 baris agar tidak tumpah */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#agendaTable.tight-layout .agenda-block small {
+    display: none; /* Sembunyikan PIC untuk menghemat ruang */
+}
+
+.table-wrapper:has(#agendaTable.tight-layout) {
+    overflow-x: hidden !important;
+}

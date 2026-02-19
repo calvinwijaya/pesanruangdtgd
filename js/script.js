@@ -316,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Menggambar Tabel Harian (Satu Hari Saja)
     function renderDailyTable() {
+        document.querySelectorAll('.global-tooltip-node').forEach(el => el.remove());
         tableBody.innerHTML = "";
         const y = selectedDate.getFullYear();
         const m = selectedDate.getMonth();
@@ -788,8 +789,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 block.style.backgroundColor = finalColor; 
                 block.style.opacity = opacity;
                 
-                block.innerHTML = (i === startIdx) ? `<strong>${acara}</strong><br><small>${pic}</small>` : '';
-                block.onclick = () => showDetailModal(fullData);
+                // 1. KONTEN TEKS UTAMA
+                if (i === startIdx) {
+                    const contentText = document.createElement('div');
+                    contentText.className = 'agenda-text';
+                    contentText.innerHTML = `<strong>${acara}</strong><br><small>${pic}</small>`;
+                    block.appendChild(contentText);
+                }
+
+                // 2. KONTEN TOOLTIP
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip-content';
+                tooltip.style.position = 'fixed';
+                // Tambahkan border-left sesuai warna blok agar mirip referensi gambar
+                tooltip.style.borderLeft = `5px solid ${finalColor}`; 
+                tooltip.innerHTML = `
+                    <div style="border-bottom: 2px solid #1a3a5f; margin-bottom: 8px; padding-bottom: 4px; font-weight: bold;">
+                        Detail Kegiatan
+                    </div>
+                    <div><b>Acara:</b> ${acara}</div>
+                    <div><b>Waktu:</b> ${fullData.jam}</div>
+                    <div><b>PIC:</b> ${pic}</div>
+                    <div><b>Peserta:</b> ${fullData.peserta || '0'} orang</div>
+                    <div style="margin-top: 8px; font-size: 0.65rem; color: #a0aec0; font-style: italic;">
+                        *Klik untuk detail/edit
+                    </div>
+                `;
+                tooltip.classList.add('global-tooltip-node');
+                document.body.appendChild(tooltip);
+
+                // 3. LOGIKA POSISI (MOUSEMOVE)
+                block.onmousemove = (e) => {
+                    const tooltipWidth = 260;
+                    const tooltipHeight = 170; // Estimasi tinggi kotak detail
+                    
+                    // Ambil koordinat kursor terhadap layar (viewport)
+                    let x = e.clientX + 20;
+                    let y = e.clientY + 20;
+
+                    // Proteksi Batas Layar Kanan
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = e.clientX - tooltipWidth - 20;
+                    }
+
+                    // Proteksi Batas Layar Bawah
+                    if (y + tooltipHeight > window.innerHeight) {
+                        y = e.clientY - tooltipHeight - 20;
+                    }
+
+                    // Update posisi tooltip secara instan
+                    tooltip.style.left = x + 'px';
+                    tooltip.style.top = y + 'px';
+                };
+
+                // Logika reset posisi saat kursor keluar agar tidak mengganggu elemen lain
+                block.onmouseleave = () => {
+                    tooltip.style.left = "-1000px";
+                    tooltip.style.top = "-1000px";
+                };
+
+                // 4. LOGIKA KLIK & RENDER
+                block.onclick = (e) => {
+                    e.stopPropagation(); // Mencegah bubbling
+                    showDetailModal(fullData);
+                };
                 
                 cell.innerHTML = "";
                 cell.appendChild(block);
@@ -1868,6 +1931,82 @@ document.addEventListener('DOMContentLoaded', () => {
                 .map(d => d.email);
         }
         return emails.filter(email => email !== "").join(",");
+    }
+
+    // Fungsi baru:
+    const btnToggleLayout = document.getElementById('btnToggleLayout');
+    const btnToggleView = document.getElementById('btnToggleView'); // Pastikan ini dideklarasi
+    const iconTight = document.getElementById('iconTight');
+    const iconLoose = document.getElementById('iconLoose');
+    const agendaTable = document.getElementById('agendaTable');
+    const textSpan = document.getElementById('textToggleView');
+
+    // --- 1. LOGIKA TOMBOL GANTI LAYOUT (TIGHT / LOOSE) ---
+    if (btnToggleLayout && agendaTable) {
+        btnToggleLayout.addEventListener('click', () => {
+            // Blokir tombol ini jika sedang berada di view mingguan
+            if (currentViewMode === 'weekly') return; 
+
+            agendaTable.classList.toggle('tight-layout');
+            const isTight = agendaTable.classList.contains('tight-layout');
+            const wrapper = agendaTable.closest('.table-wrapper');
+
+            if (isTight) {
+                iconTight.style.display = 'block';
+                iconLoose.style.display = 'none';
+                btnToggleLayout.title = "Ganti ke Loose Layout";
+                if (wrapper) wrapper.scrollLeft = 0; // Kembalikan scroll ke kiri
+            } else {
+                iconTight.style.display = 'none';
+                iconLoose.style.display = 'block';
+                btnToggleLayout.title = "Ganti ke Tight Layout";
+            }
+
+            // PERBAIKAN: Beri waktu 300ms agar browser selesai menyesuaikan 
+            // tinggi sel yang baru sebelum menghitung posisi kordinat Y
+            setTimeout(updateTimeMarker, 300); 
+        });
+    }
+
+    // --- 2. LOGIKA TOMBOL VIEW (HARIAN / MINGGUAN) ---
+    if (btnToggleView) {
+        // Kita gunakan .onclick untuk memastikan fungsi lama tertimpa sepenuhnya
+        btnToggleView.onclick = (e) => {
+            e.preventDefault(); // Mencegah refresh jika tombol ada di dalam form
+
+            if (currentViewMode === 'daily') {
+                // KITA MENUJU VIEW MINGGUAN -> PAKSA KEMBALI KE LOOSE LAYOUT
+                if (agendaTable && agendaTable.classList.contains('tight-layout')) {
+                    agendaTable.classList.remove('tight-layout');
+                    if (iconTight) iconTight.style.display = 'none';
+                    if (iconLoose) iconLoose.style.display = 'block';
+                    if (btnToggleLayout) btnToggleLayout.title = "Ganti ke Tight Layout";
+                }
+                
+                if (btnToggleLayout) btnToggleLayout.style.display = 'none';
+
+                currentViewMode = 'weekly';
+                if (textSpan) textSpan.innerText = "View per Hari";
+                
+                // Hapus pengecekan 'typeof' agar memunculkan error merah di console jika fungsi tidak ditemukan
+                renderWeeklyTable(); 
+                
+            } else {
+                // KITA MENUJU VIEW HARIAN
+                if (btnToggleLayout) btnToggleLayout.style.display = 'inline-block';
+
+                currentViewMode = 'daily';
+                if (textSpan) textSpan.innerText = "View per Minggu";
+                
+                // Hapus pengecekan 'typeof'
+                renderDailyTable(); 
+            }
+
+            setTimeout(updateTimeMarker, 300);
+        };
+    } else {
+        // Peringatan jika ID HTML ternyata tidak terbaca oleh JS
+        console.error("Elemen tombol dengan ID 'btnToggleView' tidak ditemukan!");
     }
 
 });
