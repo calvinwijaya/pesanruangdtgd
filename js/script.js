@@ -930,6 +930,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('ccDosen2').value = "";
             document.getElementById('ccDosen3').value = "";
             document.getElementById('selectLab').selectedIndex = 0;
+            const ccManualInput = document.getElementById('ccManual');
+            if (ccManualInput) ccManualInput.value = "";
 
             modal.style.display = "block";
             const user = JSON.parse(sessionStorage.getItem("user"));
@@ -1933,6 +1935,11 @@ document.addEventListener('DOMContentLoaded', () => {
             emails = Object.values(DOSEN_MAP)
                 .filter(d => d.lab === selectedLab)
                 .map(d => d.email);
+        }
+        const manualInput = document.getElementById('ccManual');
+        if (manualInput && manualInput.value.trim() !== "") {
+            const manualEmails = manualInput.value.split(',').map(e => e.trim()).filter(e => e !== "");
+            emails = emails.concat(manualEmails);
         }
         return emails.filter(email => email !== "").join(",");
     }
