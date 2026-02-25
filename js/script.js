@@ -97,7 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const ADMIN_LIST = ["dwi.sapto@ugm.ac.id", 
                         "hanifahdwi@ugm.ac.id", 
                         "calvin.wijaya@mail.ugm.ac.id", 
-                        "cecep.pratama@ugm.ac.id"];
+                        "cecep.pratama@ugm.ac.id",
+                        "sigitm@ugm.ac.id",
+                        "afiat@ugm.ac.id",
+                        "helmy@ugm.ac.id",
+                        "nuri_ana@ugm.ac.id"];
 
     // Fungsi Utama Inisialisasi
     async function initApp() {
