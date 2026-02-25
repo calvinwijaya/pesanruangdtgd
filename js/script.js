@@ -1403,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (timeToMinutes(waktuSelesaiBaru) <= timeToMinutes(waktuMulaiBaru)) {
             return Swal.fire('Error', 'Waktu selesai harus setelah waktu mulai!', 'error');
         }
-        if (idxSelesai <= idxMulai) return Swal.fire('Error', 'Jam selesai tidak valid!', 'error');
+        if (idxSelesai < idxMulai) return Swal.fire('Error', 'Jam selesai tidak valid!', 'error');
 
         const isConflict = allBookedData.some(item => {
             if (item.orderId === oldData.orderId) return false;
