@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             selectJamSelesai.innerHTML = '';
             jamOperasional.forEach((jam, idx) => {
-                if (idx > startIndex) {
+                if (idx >= startIndex) {
                     const jamSaja = jam.split(':')[0]; // Ambil angka jamnya saja untuk option
                     const opt = document.createElement('option');
                     opt.value = jamSaja;
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec", {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec", {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -1268,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         selesaiEl.innerHTML = '';
                         jamOperasional.forEach((jam, idx) => {
-                            if (idx > startIndex) {
+                            if (idx >= startIndex) {
                                 const jamSaja = jam.split(':')[0];
                                 const opt = document.createElement('option');
                                 opt.value = jamSaja;
@@ -1457,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec", { method: "POST", body: fd });
+            const res = await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec", { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -1491,7 +1491,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec", { method: "POST", body: fd });
+            await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec", { method: "POST", body: fd });
             await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
@@ -1854,7 +1854,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAgendaData() {
         showTableLoading();
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbz2namXvIG-0HN_M_y4K98I2qmg7awSamlwTcfyUPAOM6J0zQtm9ItHYQIe72sG9-RG/exec?t=" + Date.now());
+            const response = await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec?t=" + Date.now());
             const rawData = await response.json();
             
             // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
