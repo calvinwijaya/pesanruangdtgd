@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { kode: "Lab. Hidro", nama: "Lab. Hidro", kapasitas: 8 },
         { kode: "Lab GGGF", nama: "Lab GGGF", kapasitas: 16 },
         { kode: "Lab CAGE", nama: "Lab CAGE", kapasitas: 16 },
-        { kode: "Lab Foto", nama: "Lab Foto", kapasitas: 70 },
+        { kode: "Lab Foto", nama: "Lab Foto", kapasitas: 60 },
         { kode: "Lab Geokom", nama: "Lab Geokom", kapasitas: 75 },
         { kode: "III.6", nama: "III.6", kapasitas: 12 },
         { kode: "III.5", nama: "III.5", kapasitas: 45 },
