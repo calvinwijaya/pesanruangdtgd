@@ -1253,12 +1253,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" id="detPIC" value="${data.pic}" readonly style="border: 1px solid #e2e8f0;">
                     </div>
 
-                    <div class="form-group" style="margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e0;">
-                        <label style="font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; font-weight: bold;">CC Notifikasi Pesanan Ke:</label>
-                        <div style="font-weight: 600; color: #2b6cb0; font-size: 0.85rem; line-height: 1.4;">
-                            ${ccInfoText}
+                    ${hasAccess ? `
+                        <div class="form-group" style="margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e0;">
+                            <label style="font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; font-weight: bold;">CC Notifikasi Pesanan Ke:</label>
+                            <div style="font-weight: 600; color: #2b6cb0; font-size: 0.85rem; line-height: 1.4;">
+                                ${ccInfoText}
+                            </div>
                         </div>
-                    </div>
+                    ` : ''}
 
                     <div id="saveContainer" style="display:none; margin-top: 20px;">
                         <button id="saveUpdateBtn" class="btn-submit" style="background: #38a169;">Simpan Perubahan Agenda</button>
