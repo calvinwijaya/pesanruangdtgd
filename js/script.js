@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec", {
+                const response = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec", {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -1182,6 +1182,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Gagal format tanggal:", e);
         }
 
+        // Memanggil cc:
+        const ccInfoText = formatCCText(data.cc);
+
         await Swal.fire({
             title: '', // Kita kosongkan judul bawaan agar bisa kita desain kustom di HTML
             html: `
@@ -1248,6 +1251,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="form-group">
                         <label>PIC Kegiatan</label>
                         <input type="text" id="detPIC" value="${data.pic}" readonly style="border: 1px solid #e2e8f0;">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e0;">
+                        <label style="font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; font-weight: bold;">CC Notifikasi Pesanan Ke:</label>
+                        <div style="font-weight: 600; color: #2b6cb0; font-size: 0.85rem; line-height: 1.4;">
+                            ${ccInfoText}
+                        </div>
                     </div>
 
                     <div id="saveContainer" style="display:none; margin-top: 20px;">
@@ -1459,7 +1469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec", { method: "POST", body: fd });
+            const res = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec", { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -1493,7 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec", { method: "POST", body: fd });
+            await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec", { method: "POST", body: fd });
             await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
@@ -1856,7 +1866,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAgendaData() {
         showTableLoading();
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbzPWj4nylG527A64YAd4tSsaSeI9QYxw57c0B2DUoAlnq3Hm7atgN_gtWKczaMRRQ3i/exec?t=" + Date.now());
+            const response = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec?t=" + Date.now());
             const rawData = await response.json();
             
             // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
@@ -1883,6 +1893,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadDosenData();
+
+    // Fungsi menyimpan cc sebagai list
+    // Fungsi untuk mengubah email CC menjadi nama atau grup
+    function formatCCText(ccString) {
+        if (!ccString) return "-";
+
+        const emails = ccString.split(',').map(e => e.trim()).filter(e => e !== "");
+        if (emails.length === 0) return "-";
+
+        // 1. Cek apakah ini dikirim ke Seluruh Dosen (toleransi selisih 2 orang jika ada yg tdk aktif)
+        const totalDosen = Object.values(DOSEN_MAP).filter(d => d.status && d.status.toLowerCase().trim() === "dosen").length;
+        if (totalDosen > 0 && emails.length >= totalDosen - 2) {
+            return "Seluruh Dosen DTGD";
+        }
+
+        // 2. Cek apakah ini dikirim ke suatu Lab
+        const labGroups = {
+            "Teknik Fotogrametri dan Penginderaan Jauh": 0,
+            "Kadaster dan Teknik Geoinformatika": 0,
+            "Survei Keteknikan": 0,
+            "Survei Hidrografi": 0,
+            "Geodesi Geometri dan Geodesi Fisis": 0
+        };
+        
+        emails.forEach(email => {
+            for (const nama in DOSEN_MAP) {
+                if (DOSEN_MAP[nama].email === email && DOSEN_MAP[nama].lab) {
+                    labGroups[DOSEN_MAP[nama].lab]++;
+                    break;
+                }
+            }
+        });
+
+        for (const labName in labGroups) {
+            const labMembersCount = Object.values(DOSEN_MAP).filter(d => d.lab === labName).length;
+            if (labMembersCount > 0 && labGroups[labName] >= labMembersCount - 1) { 
+                return `Seluruh Dosen/Tendik Lab. ${labName}`;
+            }
+        }
+
+        // 3. Jika perorangan, ubah menjadi Nama
+        const namaList = emails.map(email => {
+            for (const nama in DOSEN_MAP) {
+                if (DOSEN_MAP[nama].email === email) return nama;
+            }
+            return email; // Jika diketik manual dan bukan dosen, tampilkan email aslinya
+        });
+
+        return namaList.join(', ');
+    }
 
     // Toggle tampilan berdasarkan mode
     window.toggleCCMode = function() {
