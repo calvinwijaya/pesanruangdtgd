@@ -2081,5 +2081,42 @@ document.addEventListener('DOMContentLoaded', () => {
         // Peringatan jika ID HTML ternyata tidak terbaca oleh JS
         console.error("Elemen tombol dengan ID 'btnToggleView' tidak ditemukan!");
     }
+    
+    // --- NAVIGASI HARI DARI JUDUL TABEL ---
+    function shiftDate(offsetDays) {
+        // 1. Geser tanggal terpilih
+        selectedDate.setDate(selectedDate.getDate() + offsetDays);
+        
+        // 2. Sinkronisasi bulan di kalender agar ikut pindah jika menyeberang bulan
+        viewDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        
+        // 3. Update Text Judul
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = selectedDate.toLocaleDateString('id-ID', options);
+        const titleElem = document.getElementById('tableTitleDynamic');
+        if (titleElem) {
+            titleElem.innerText = `Jadwal Penggunaan Ruang DTGD - ${formattedDate}`;
+        }
+        
+        // 4. Render ulang kalender dan tabel agar UI ikut bergerak
+        renderCalendar();
+        
+        if (currentViewMode === 'weekly') {
+            renderWeeklyTable();
+        } else {
+            renderDailyTable();
+        }
+    }
+
+    // Pasang Event Listener ke Tombol Baru
+    const btnPrevDay = document.getElementById('btnPrevDay');
+    const btnNextDay = document.getElementById('btnNextDay');
+    
+    if (btnPrevDay) {
+        btnPrevDay.addEventListener('click', () => shiftDate(-1));
+    }
+    if (btnNextDay) {
+        btnNextDay.addEventListener('click', () => shiftDate(1));
+    }
 
 });
