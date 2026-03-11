@@ -908,3 +908,70 @@ body.modal-open {
 .table-wrapper:has(#agendaTable.tight-layout) {
     overflow-x: hidden !important;
 }
+
+/* =========================================================
+   RESPONSIVE DESIGN (TAMPILAN MOBILE / SMARTPHONE)
+   ========================================================= */
+@media screen and (max-width: 768px) {
+    /* 1. Bagian Header (Logo & Judul) ditumpuk ke bawah */
+    .booking-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 15px;
+    }
+    .header-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .header-left h1 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+    .header-right {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* 2. Kartu Dashboard (Kalender & Panduan) menjadi 1 kolom (atas-bawah) */
+    .dashboard-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 3. TABEL HARUS BISA DI-SCROLL KE KANAN (TIDAK MENGECIL) */
+    /* Kita paksa tabel tetap lebar (misal 1200px), sehingga user tinggal swipe/geser ke kanan */
+    #agendaTable {
+        min-width: 1200px !important; 
+    }
+    .table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch; /* Efek scroll licin & halus di HP (iOS/Android) */
+    }
+
+    /* 4. Judul Tabel dan Tombol-tombol View ditumpuk rapi */
+    .table-header-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+    /* Tombol ganti view dan filter membungkus diri jika layar terlalu sempit */
+    .table-header-flex > div:last-child {
+        flex-wrap: wrap; 
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* 5. Perbaikan Popup Modal agar tidak menabrak pinggir layar HP */
+    .modal-content {
+        width: 95% !important;
+        padding: 20px 15px !important;
+        margin: 5% auto !important;
+    }
+    
+    /* 6. Tombol Pesan Ruang, Filter, dll ditumpuk ke bawah agar mudah ditekan jari */
+    .control-panel {
+        grid-template-columns: 1fr !important; 
+    }
+}
