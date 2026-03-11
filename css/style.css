@@ -974,4 +974,17 @@ body.modal-open {
     .control-panel {
         grid-template-columns: 1fr !important; 
     }
+
+    /* 7. Membiarkan judul tabel turun ke bawah (Word Wrap) di HP */
+    .table-title {
+        white-space: normal !important; /* Mengizinkan teks turun ke baris baru */
+        word-wrap: break-word;
+        font-size: 1.1rem !important; /* Mengecilkan sedikit ukuran font agar proporsional di HP */
+        line-height: 1.4; /* Memberi jarak antar baris agar rapi saat terlipat */
+        align-items: flex-start !important; /* Memastikan garis oranye tetap di atas jika teks menjadi 2 baris */
+    }
+
+    .table-title::before {
+        margin-top: 3px; /* Menyesuaikan posisi garis oranye dengan baris pertama teks */
+    }
 }
