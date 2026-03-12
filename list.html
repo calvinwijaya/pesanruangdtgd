@@ -197,16 +197,15 @@
                 return a._dateObj - b._dateObj || a.jam.localeCompare(b.jam);
             });
 
-            // HTML TABEL MENGGUNAKAN CSS YANG SAMA
             let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: auto;">
+                <table style="width: 100%; min-width: 800px; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed;">
                     <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 10;">
                         <tr>
-                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 100px;">Hari/Tgl</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 100px;">Waktu</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: left;">Agenda Acara</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 120px;">Ruang</th>
-                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 80px;">Peserta</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 12%;">Hari/Tgl</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 15%;">Waktu</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: left; width: 45%;">Agenda Acara</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 18%;">Ruang</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: center; width: 10%;">Peserta</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -214,23 +213,23 @@
                             let dObj = item._dateObj;
                             return `
                             <tr style="border-bottom: 1px solid #edf2f7;">
-                                <td style="padding: 12px; text-align: center; white-space: nowrap;">
+                                <td style="padding: 12px; text-align: center; vertical-align: top;">
                                     <div style="font-weight: 700; color: #1a3a5f;">${dObj.toLocaleDateString('id-ID', { weekday: 'long' })}</div>
                                     <div style="color: #64748b; font-size: 0.75rem;">${dObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</div>
                                 </td>
-                                <td style="padding: 12px; text-align: center; white-space: nowrap;">
+                                <td style="padding: 12px; text-align: center; vertical-align: top;">
                                     <span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600;">${item.jam}</span>
                                 </td>
-                                <td style="padding: 12px; text-align: left; vertical-align: top;">
-                                    <div style="font-weight: 600; color: #1e293b; line-height: 1.3; font-size: 1rem;">${item.acara}</div>
+                                <td style="padding: 12px; text-align: left; vertical-align: top; white-space: normal; overflow-wrap: break-word; word-break: break-word;">
+                                    <div style="font-weight: 600; color: #1e293b; line-height: 1.4; font-size: 1rem;">${item.acara}</div>
                                     <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">PIC: ${item.pic}</div>
                                 </td>
-                                <td style="padding: 12px; text-align: center; white-space: nowrap;">
+                                <td style="padding: 12px; text-align: center; vertical-align: top;">
                                     <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; border: 1px solid #bae6fd; display: inline-block;">
                                         ${item.ruang}
                                     </span>
                                 </td>
-                                <td style="padding: 12px; text-align: center; color: #718096; font-style: italic;">
+                                <td style="padding: 12px; text-align: center; color: #718096; font-style: italic; vertical-align: top;">
                                     ${item.peserta || '-'}
                                 </td>
                             </tr>`;
