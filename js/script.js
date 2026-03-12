@@ -1712,6 +1712,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderListHTML();
     };
 
+    document.getElementById('btnOpenNewTab').onclick = () => {
+        const d = listDateAnchor;
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const url = `list.html?mode=${modalViewMode}&date=${dateStr}`;
+        window.open(url, '_blank');
+    };
+
     function renderListHTML() {
         const titleElem = document.getElementById('listTitle');
         const rangeElem = document.getElementById('listRangeText');
