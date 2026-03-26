@@ -988,3 +988,25 @@ body.modal-open {
         margin-top: 3px; /* Menyesuaikan posisi garis oranye dengan baris pertama teks */
     }
 }
+
+/* =========================================================
+   FITUR COLLAPSIBLE (FOCUS MODE)
+   ========================================================= */
+
+/* Transisi halus saat membuka/menutup */
+.dashboard-row {
+    transition: all 0.3s ease-in-out;
+}
+
+/* 1. Menyembunyikan Card Panduan & Melebarkan Kalender */
+.dashboard-row.guide-hidden {
+    grid-template-columns: 1fr !important; /* Paksa hanya 1 kolom */
+}
+.dashboard-row.guide-hidden #guidePanelCard {
+    display: none !important; /* Hilangkan panel panduan */
+}
+
+/* 2. Menyembunyikan Seluruh Baris Atas (Fokus ke Tabel) */
+.top-row-hidden .dashboard-row {
+    display: none !important;
+}

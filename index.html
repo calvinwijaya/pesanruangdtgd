@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <div class="card-dashboard">
+            <div class="card-dashboard" id="guidePanelCard">
                 <div class="guide-container">
                     <h3>Panduan Pemesanan Ruang DTGD:</h3>
                     <ol class="guide-list">
@@ -64,6 +64,7 @@
                         <li>Tombol <strong>"Sinkron Data"</strong> digunakan untuk menarik data terbaru dari server.</li>
                         <li>Tombol <strong>"Filter Ruang"</strong> untuk menyederhanakan tampilan kolom ruangan di tabel.</li>
                         <li>Konsultasi dan konfirmasi setelah pemesanan ruang silakan menghubungi <strong>Admin</strong>.</li>
+                        <li>Untuk peminjaman area luar seperti <strong>Lobby atau Area Parkir</strong>, silakan pilih ruangan <strong>"Lainnya"</strong> dan tuliskan detail lokasinya pada nama Acara.</li>
                     </ol>
                 </div>
                 <div class="control-panel">
@@ -117,6 +118,26 @@
                         <path d="M9 3v18m6-18v18M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"></path>
                     </svg>
                 </button>
+
+                <button id="btnToggleGuide" class="btn-ctrl btn-view-toggle" title="Perluas Kalender">
+                    <svg id="iconGuideDefault" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                    <svg id="iconGuideActive" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V5m0 4H5m4 0l-5-5m11 5V5m0 4h4m-4 0l5-5M9 15v4m0-4H5m4 0l-5 5m11-5v4m0-4h4m-4 0l5 5"></path>
+                    </svg>
+                </button>
+
+                <button id="btnToggleTopRow" class="btn-ctrl btn-view-toggle" title="Fokus Tabel">
+                    <svg id="iconTopRowDefault" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"></path>
+                    </svg>
+                    <svg id="iconTopRowActive" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v6H9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3m12 0h3M12 3v3m0 12v3"></path>
+                    </svg>
+                </button>
+
             </div>
         </div>
         <div class="table-wrapper">
@@ -130,7 +151,7 @@
                 <thead>
                     <tr>
                         <th>Jam</th>
-                        <th>RS.1</th><th>RS.2</th><th>RS.3</th><th>Lab. Hidro</th><th>Lab GGGF</th><th>Lab GIIG</th><th>Lab Foto</th><th>Lab Geokom</th><th>III.6</th><th>III.5</th><th>III.4</th><th>III.3</th><th>III.2</th><th>III.1</th><th>1.1</th><th>R. Pengurus</th><th>R. Sidang SURTA</th><th>R. Bersama</th>
+                        <th>RS.1</th><th>RS.2</th><th>RS.3</th><th>Lab. Hidro</th><th>Lab GGGF</th><th>Lab GIIG</th><th>Lab Foto</th><th>Lab Geokom</th><th>III.6</th><th>III.5</th><th>III.4</th><th>III.3</th><th>III.2</th><th>III.1</th><th>1.1</th><th>R. Pengurus</th><th>R. Sidang SURTA</th><th>R. Bersama</th><th>Lainnya</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -209,6 +230,9 @@
                 <div class="form-group">
                     <label>Ruangan</label>
                     <select id="pilihRuang" required></select>
+                    <small style="color: #718096; font-size: 0.75rem; margin-top: 5px; display: block; line-height: 1.3;">
+                        *Pilih <strong>Lainnya</strong> jika ingin memesan area non-ruangan (seperti Lobby, Area Parkir Utara/Selatan, dll), lalu tulis detail lokasinya di kolom Acara.
+                    </small>
                 </div>
                 <div class="form-group">
                     <label>Acara</label>

@@ -88,7 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { kode: "1.1", nama: "1.1", kapasitas: 80 },
         { kode: "R. Pengurus", nama: "R. Pengurus", kapasitas: 8 },
         { kode: "R. Sidang SURTA", nama: "R. Sidang SURTA", kapasitas: 8 },
-        { kode: "R. Bersama", nama: "R. Bersama", kapasitas: 12 }
+        { kode: "R. Bersama", nama: "R. Bersama", kapasitas: 12 },
+        { kode: "Lainnya", nama: "Lainnya", kapasitas: 999999 }
     ];
 
     let filterRuangAktif = [...daftarRuang];
@@ -117,7 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectRuang.options.length <= 1) {
             selectRuang.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
             daftarRuang.forEach(ruangObj => {
-                selectRuang.innerHTML += `<option value="${ruangObj.kode}">${ruangObj.nama} (Kapasitas: ${ruangObj.kapasitas})</option>`;
+                // selectRuang.innerHTML += `<option value="${ruangObj.kode}">${ruangObj.nama} (Kapasitas: ${ruangObj.kapasitas})</option>`;
+                const teksKapasitas = ruangObj.kapasitas === 999999 ? "Lobby, Parkir, dll" : `Kapasitas: ${ruangObj.kapasitas}`;
+                selectRuang.innerHTML += `<option value="${ruangObj.kode}">${ruangObj.nama} (${teksKapasitas})</option>`;
             });
             jamOperasional.forEach(jam => {
                 const jamSaja = jam.split(':')[0];
@@ -332,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <th>
                 <div style="font-size: 1rem;">${r.nama}</div>
                 <div style="font-size: 0.7rem; font-weight: 400; color: #cbd5e0; margin-top: 2px;">
-                    ${r.kapasitas} orang
+                    ${r.kapasitas === 999999 ? 'Area Fleksibel' : r.kapasitas + ' orang'}
                 </div>
             </th>
         `).join('');
@@ -562,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec", {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec", {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -1044,7 +1047,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const grupRuang = {
                 "Ruang Kuliah": ["1.1", "III.1", "III.2", "III.3", "III.4", "III.5", "III.6"],
                 "Ruang Sidang/ Rapat": ["RS.1", "RS.2", "RS.3", "R. Pengurus", "R. Sidang SURTA", "R. Bersama"],
-                "Ruang Lab": ["Lab GGGF", "Lab Foto", "Lab. Hidro", "Lab CAGE", "Lab Geokom"]
+                "Ruang Lab": ["Lab GGGF", "Lab Foto", "Lab. Hidro", "Lab CAGE", "Lab Geokom"],
+                "Lainnya": ["Lainnya"]
             };
             const { value: selectedKodes } = await Swal.fire({
                 title: 'Filter Ruangan',
@@ -1471,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec", { method: "POST", body: fd });
+            const res = await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec", { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -1505,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec", { method: "POST", body: fd });
+            await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec", { method: "POST", body: fd });
             await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
@@ -1875,7 +1879,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAgendaData() {
         showTableLoading();
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec?t=" + Date.now());
+            const response = await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec?t=" + Date.now());
             const rawData = await response.json();
             
             // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
@@ -2087,6 +2091,58 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         // Peringatan jika ID HTML ternyata tidak terbaca oleh JS
         console.error("Elemen tombol dengan ID 'btnToggleView' tidak ditemukan!");
+    }
+
+    // --- LOGIKA COLLAPSIBLE UI (FOCUS MODE) ---
+    const btnToggleGuide = document.getElementById('btnToggleGuide');
+    const btnToggleTopRow = document.getElementById('btnToggleTopRow');
+    const dashboardRow = document.querySelector('.dashboard-row');
+    const bookingContainer = document.querySelector('.booking-container');
+
+    // Deklarasi Ikon
+    const iconGuideDefault = document.getElementById('iconGuideDefault');
+    const iconGuideActive = document.getElementById('iconGuideActive');
+    const iconTopRowDefault = document.getElementById('iconTopRowDefault');
+    const iconTopRowActive = document.getElementById('iconTopRowActive');
+
+    if (btnToggleGuide) {
+        btnToggleGuide.addEventListener('click', () => {
+            dashboardRow.classList.toggle('guide-hidden');
+            const isHidden = dashboardRow.classList.contains('guide-hidden');
+            
+            // Ubah Warna Background & Hover Text (Title)
+            btnToggleGuide.style.background = isHidden ? '#2b6cb0' : '';
+            btnToggleGuide.style.color = isHidden ? 'white' : '';
+            btnToggleGuide.title = isHidden ? 'Tampilkan Panduan' : 'Perluas Kalender';
+            
+            // Tukar Ikon
+            if (iconGuideDefault && iconGuideActive) {
+                iconGuideDefault.style.display = isHidden ? 'none' : 'block';
+                iconGuideActive.style.display = isHidden ? 'block' : 'none';
+            }
+            
+            setTimeout(updateTimeMarker, 300); 
+        });
+    }
+
+    if (btnToggleTopRow) {
+        btnToggleTopRow.addEventListener('click', () => {
+            bookingContainer.classList.toggle('top-row-hidden');
+            const isHidden = bookingContainer.classList.contains('top-row-hidden');
+            
+            // Ubah Warna Background & Hover Text (Title)
+            btnToggleTopRow.style.background = isHidden ? '#2b6cb0' : '';
+            btnToggleTopRow.style.color = isHidden ? 'white' : '';
+            btnToggleTopRow.title = isHidden ? 'Tampilkan Kalender Atas' : 'Fokus Tabel';
+            
+            // Tukar Ikon
+            if (iconTopRowDefault && iconTopRowActive) {
+                iconTopRowDefault.style.display = isHidden ? 'none' : 'block';
+                iconTopRowActive.style.display = isHidden ? 'block' : 'none';
+            }
+            
+            setTimeout(updateTimeMarker, 300);
+        });
     }
     
     // --- NAVIGASI HARI DARI JUDUL TABEL ---
