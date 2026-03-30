@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec", {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbw1ZGMYj7k_eCOQyhE4YpqSlYm9_Xydziv1j91L3VKl_ZaOYGrsUjJCS7VK8msh7GKE/exec", {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -1475,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec", { method: "POST", body: fd });
+            const res = await fetch("https://script.google.com/macros/s/AKfycbw1ZGMYj7k_eCOQyhE4YpqSlYm9_Xydziv1j91L3VKl_ZaOYGrsUjJCS7VK8msh7GKE/exec", { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -1509,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec", { method: "POST", body: fd });
+            await fetch("https://script.google.com/macros/s/AKfycbw1ZGMYj7k_eCOQyhE4YpqSlYm9_Xydziv1j91L3VKl_ZaOYGrsUjJCS7VK8msh7GKE/exec", { method: "POST", body: fd });
             await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
@@ -1879,7 +1879,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAgendaData() {
         showTableLoading();
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbxmguviEHfxf19rJ8G_YbB8vmnVm2suZvdI1abEpdf2gYk2XJYHxRBJsF_Bb_sU3-IL/exec?t=" + Date.now());
+            const response = await fetch("https://script.google.com/macros/s/AKfycbw1ZGMYj7k_eCOQyhE4YpqSlYm9_Xydziv1j91L3VKl_ZaOYGrsUjJCS7VK8msh7GKE/exec?t=" + Date.now());
             const rawData = await response.json();
             
             // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
