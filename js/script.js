@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { kode: "III.1", nama: "III.1", kapasitas: 117 },
         { kode: "1.1", nama: "1.1", kapasitas: 80 },
         { kode: "R. Pengurus", nama: "R. Pengurus", kapasitas: 8 },
-        { kode: "R. Sidang SURTA", nama: "R. Sidang SURTA", kapasitas: 8 },
+        { kode: "RS. Lab SK", nama: "RS. Lab SK", kapasitas: 8 },
         { kode: "R. Bersama", nama: "R. Bersama", kapasitas: 12 },
         { kode: "Lainnya", nama: "Lainnya", kapasitas: 999999 }
     ];
@@ -1046,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnFilter.onclick = async () => {
             const grupRuang = {
                 "Ruang Kuliah": ["1.1", "III.1", "III.2", "III.3", "III.4", "III.5", "III.6"],
-                "Ruang Sidang/ Rapat": ["RS.1", "RS.2", "RS.3", "R. Pengurus", "R. Sidang SURTA", "R. Bersama"],
+                "Ruang Sidang/ Rapat": ["RS.1", "RS.2", "RS.3", "R. Pengurus", "RS. Lab SK", "R. Bersama"],
                 "Ruang Lab": ["Lab GGGF", "Lab Foto", "Lab. Hidro", "Lab CAGE", "Lab Geokom"],
                 "Lainnya": ["Lainnya"]
             };
