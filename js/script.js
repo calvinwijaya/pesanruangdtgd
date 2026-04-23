@@ -8,7 +8,7 @@ function handleCredentialResponse(response) {
         didOpen: () => { Swal.showLoading(); }
     });
 
-    fetch("https://script.google.com/macros/s/AKfycbzlVEuazq6Sfcr8X_g5qdy75AQ5-vONvZBTPzfZxLtMtx9Zgpppd-9T_NmbJudyEt-E3g/exec", {
+    fetch(GAS_LOGIN, {
         method: "POST",
         body: JSON.stringify({
             action: "login",
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let holidaysData = {};
     async function fetchHolidays() {
         try {
-            const response = await fetch('https://raw.githubusercontent.com/guangrei/APIHariLibur_V2/main/calendar.min.json');
+            const response = await fetch(APIHARILIBUR);
             holidaysData = await response.json();
             renderCalendar(); // Gambar ulang kalender setelah data didapat
         } catch (error) {
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fd = new FormData();
                 fd.append("data", JSON.stringify(payload));
 
-                const response = await fetch("https://script.google.com/macros/s/AKfycbxpcWOX-04Jz96ZSrXokdW9w2prBPVhtOMxN1keAd-6wsgXUG2bW0sm2vfUeiYzkFz-/exec", {
+                const response = await fetch(GAS_DB_PESANRUANG, {
                     method: "POST",
                     body: fd // Kirim sebagai FormData
                 });
@@ -1475,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify(payload));
 
-            const res = await fetch("https://script.google.com/macros/s/AKfycbxpcWOX-04Jz96ZSrXokdW9w2prBPVhtOMxN1keAd-6wsgXUG2bW0sm2vfUeiYzkFz-/exec", { method: "POST", body: fd });
+            const res = await fetch(GAS_DB_PESANRUANG, { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.result === "success") {
@@ -1509,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fd = new FormData();
             fd.append("data", JSON.stringify({ action: "deleteBooking", "Order ID": orderId }));
             
-            await fetch("https://script.google.com/macros/s/AKfycbxpcWOX-04Jz96ZSrXokdW9w2prBPVhtOMxN1keAd-6wsgXUG2bW0sm2vfUeiYzkFz-/exec", { method: "POST", body: fd });
+            await fetch(GAS_DB_PESANRUANG, { method: "POST", body: fd });
             await fetchAgendaData();
             Swal.fire('Terhapus!', 'Agenda telah dihapus.', 'success').then(() => renderDailyTable());
         }
@@ -1879,7 +1879,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAgendaData() {
         showTableLoading();
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbxpcWOX-04Jz96ZSrXokdW9w2prBPVhtOMxN1keAd-6wsgXUG2bW0sm2vfUeiYzkFz-/exec?t=" + Date.now());
+            const response = await fetch(GAS_DB_PESANRUANG + "?t=" + Date.now());
             const rawData = await response.json();
             
             // Simpan ke variabel global agar bisa dipakai ganti-ganti tanggal tanpa fetch lagi
@@ -1897,7 +1897,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fungsi baru untuk memanggil dosen untuk cc
     async function loadDosenData() {
         try {
-            const response = await fetch("https://script.google.com/macros/s/AKfycbyhXV7JLriFYitwEkl-1bzSbiphnZDlpBQEgS1Ii_rlvZZvkIOQSZl4wHF9K2SF6Jz6/exec");
+            const response = await fetch(GAS_DOSEN_CC);
             DOSEN_MAP = await response.json();
             populateCCDropdowns();
         } catch (err) {

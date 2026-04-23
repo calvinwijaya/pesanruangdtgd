@@ -144,7 +144,7 @@
 
         <div id="listTableContainer"></div>
     </div>
-
+    <script src="js/config.js"></script>
     <script>
         // 1. Inisialisasi State dari URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -174,7 +174,7 @@
         async function fetchData() {
             try {
                 // URL INI HARUS SAMA DENGAN GAS ANDA
-                const response = await fetch("https://script.google.com/macros/s/AKfycby0o45lQON04p2MpsXxATjiDJIBTL7QccDppkqdey8fUbIpXb2NUt3-5bLj9oMS9eBG/exec?t=" + Date.now());
+                const response = await fetch(GAS_DB_PESANRUANG + "?t=" + Date.now());
                 const rawData = await response.json();
                 
                 // Normalisasi
